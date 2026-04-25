@@ -7,7 +7,7 @@ class GameState:
     def __init__(self):
         self.players: list[Player] = []
         self.current_round = 0
-        self.max_players = 2
+        self.max_players = 3
 
     def add_player(self, player_id: str, name: str):
         bag_size = 7

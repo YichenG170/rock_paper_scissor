@@ -553,6 +553,8 @@ def run_match(p1, p2):
     else:
         log("\n⏱️ 5回合结束，双方平局，本场不掉血", "yellow")
         _send_match_result(p1, p2, score1, score2, is_draw=True)
+        p1.gold += 1
+        p2.gold += 1
         return p1, p2, True
     
     damage = winner.attack
@@ -568,5 +570,8 @@ def run_match(p1, p2):
         log(f"{winner.name} 【物尽其用】额外伤害 +{extra}（{scissors_count}剪刀）", "red")
 
     loser.health -= damage
+
+    p1.gold += 5
+    p2.gold += 5
 
     return winner, loser, False
