@@ -1,0 +1,12 @@
+{
+  "max_players": 8,
+  "initial_health": 20,
+  "initial_gold": 10,
+  "initial_bag": {
+    "rock": 1,
+    "scissors": 1,
+    "paper": 1
+  },
+  "port": 5555,
+  "host": "0.0.0.0"
+}

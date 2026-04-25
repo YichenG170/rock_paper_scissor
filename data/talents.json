@@ -1,0 +1,189 @@
+{
+  "talents": [
+    {
+      "id": "slot_expander",
+      "name": "多多益善",
+      "cost": 10,
+      "effect": {"type": "shop_slots_plus", "value": 1},
+      "description": "商店槽位 +1"
+    },
+    {
+      "id": "battle_gold_to_rps",
+      "name": "点石成拳",
+      "cost": 10,
+      "effect": {"type": "battle_gold_to_random_bag", "value": 1},
+      "description": "每次在对战中获得金币时，获得等量的随机出拳"
+    },
+    {
+      "id": "rock_score_plus",
+      "name": "磐！石！",
+      "cost": 30,
+      "effect": {"type": "rock_win_score_bonus", "value": 1},
+      "description": "你的石头在获胜时额外 +1 分"
+    },
+    {
+      "id": "last_rock_shift",
+      "name": "生生不息",
+      "cost": 10,
+      "effect": {"type": "on_last_rock_convert_to_rock", "value": 1},
+      "description": "若你打出最后一个石头，结算后随机把一个其他出拳变成石头"
+    },
+    {
+      "id": "berserker_oath",
+      "name": "野蛮人",
+      "cost": 20,
+      "effect": {"type": "double_damage_on_win", "value": 1},
+      "description": "你战胜对手时造成双倍伤害；第一轮出拳由系统随机"
+    },
+    {
+      "id": "rock_corrupt",
+      "name": "连接大脑",
+      "cost": 15,
+      "effect": {"type": "on_play_rock_convert_opponent_to_rock", "value": 1},
+      "description": "你打出石头后，对手随机一个出拳变成石头"
+    },
+
+    {
+      "id": "steel_skin",
+      "name": "妙手回春",
+      "cost": 20,
+      "effect": {"type": "health_plus", "value": 4},
+      "description": "立即获得 +4 血量）"
+    },
+    {
+      "id": "battle_tutor",
+      "name": "👊 左拳高伤害",
+      "cost": 10,
+      "effect": {"type": "attack_plus", "value": 1},
+      "description": "杀伤力 +1"
+    },
+    {
+      "id": "golden_compound",
+      "name": "经济学家",
+      "cost": 30,
+      "effect": {"type": "interest_rate_plus", "value": 0.05},
+      "description": "利息率 +10%"
+    },
+    {
+      "id": "second_counter",
+      "name": "第二柜台",
+      "cost": 20,
+      "effect": {"type": "shop_slots_plus", "value": 1},
+      "description": "商店槽位 +2"
+    },
+    {
+      "id": "stone_bootcamp",
+      "name": "石头？",
+      "cost": 10,
+      "effect": {"type": "battle_start_add_bag", "choice": "rock", "value": 1},
+      "description": "每场对战开始时额外获得 1 个石头"
+    },
+    {
+      "id": "blade_bootcamp",
+      "name": "剪刀？",
+      "cost": 10,
+      "effect": {"type": "battle_start_add_bag", "choice": "scissors", "value": 1},
+      "description": "每场对战开始时额外获得 1 个剪刀"
+    },
+    {
+      "id": "tide_bootcamp",
+      "name": "布？",
+      "cost": 10,
+      "effect": {"type": "battle_start_add_bag", "choice": "paper", "value": 1},
+      "description": "每场对战开始时额外获得 1 个布"
+    },
+    {
+      "id": "chaos_bootcamp",
+      "name": "混沌训练营",
+      "cost": 15,
+      "effect": {"type": "battle_start_add_random", "value": 2},
+      "description": "每场对战开始时随机获得 2 个出拳"
+    },
+    {
+      "id": "brutal_edge",
+      "name": "右拳伤害高 👊",
+      "cost": 10,
+      "effect": {"type": "attack_plus", "value": 1},
+      "description": "获得 +1 杀伤力"
+    },
+    {
+      "id": "paper_heal_on_win",
+      "name": "绷带",
+      "cost": 20,
+      "effect": {"type": "paper_win_heal", "value": 1},
+      "description": "使用布获胜后，回复 1 点血量"
+    },
+    {
+      "id": "paper_reroll_all",
+      "name": "包罗万象",
+      "cost": 10,
+      "effect": {"type": "on_play_paper_reroll_all", "value": 1},
+      "description": "使用布后，随机变换自己的所有出拳"
+    },
+    {
+      "id": "paper_transform_bonus",
+      "name": "再来一个",
+      "cost": 15,
+      "effect": {"type": "paper_transform_bonus", "value": 1},
+      "description": "每次通过变换获得布时，额外获得 1 个布"
+    },
+    {
+      "id": "paper_on_lose_gain",
+      "name": "再来一次",
+      "cost": 10,
+      "effect": {"type": "on_lose_if_has_paper_gain", "value": 1},
+      "description": "失败后若拥有布，则获得 1 个布"
+    },
+    {
+      "id": "paper_overload",
+      "name": "人！海！战！术！",
+      "cost": 30,
+      "effect": {"type": "paper_over_5_win_bonus", "value": 3},
+      "description": "若拥有超过 5 个布，赢得一局后直接 +3 分"
+    },
+
+    {
+      "id": "scissors_gold_steal",
+      "name": "剪！破！钱！袋！",
+      "cost": 30,
+      "effect": {"type": "scissors_win_drain_gold", "value": 8},
+      "description": "使用剪刀获胜后，偷取对手 8 金币"
+    },
+    {
+      "id": "scissors_damage_amp",
+      "name": "剪刀手",
+      "cost": 20,
+      "effect": {"type": "scissors_win_damage_plus", "value": 1},
+      "description": "使用剪刀获胜后，本场对对手伤害 +1"
+    },
+    {
+      "id": "scissors_gold_to_scissors",
+      "name": "见钱剪开",
+      "cost": 20,
+      "effect": {"type": "battle_gold_to_scissors", "value": 1},
+      "description": "每次在对战中获得金币时，获得 1 个剪刀"
+    },
+    {
+      "id": "scissors_quantity_damage",
+      "name": "物尽其用",
+      "cost": 10,
+      "effect": {"type": "scissors_count_damage_bonus", "value": 1},
+      "description": "对敌人造成伤害时，每拥有 2 个剪刀，伤害 +1"
+    },
+    {
+      "id": "scissors_to_paper",
+      "name": "剪刀，布！",
+      "cost": 15,
+      "effect": {"type": "on_play_scissors_convert_opp_to_paper", "value": 1},
+      "description": "使用剪刀后，将对手随机一个出拳变成布"
+    },
+
+    {
+      "id": "same_choice_gold",
+      "name": "连招大师",
+      "cost": 10,
+      "effect": {"type": "consecutive_same_choice_gold", "value": 2},
+      "description": "连续出两个相同拳型时，获得 2 金币"
+    }
+  ]
+}

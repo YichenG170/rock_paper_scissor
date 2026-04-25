@@ -1,0 +1,164 @@
+{
+  "items": [
+    {
+      "id": "rock_plus_1",
+      "name": "石头·I",
+      "rarity": "common",
+      "cost": 3,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "add_bag", "choice": "rock", "value": 1},
+      "description": "本局获得 1 个石头"
+    },
+    {
+      "id": "rock_plus_2",
+      "name": "石头·II",
+      "rarity": "rare",
+      "cost": 5,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "add_bag", "choice": "rock", "value": 2},
+      "description": "本局获得 2 个石头"
+    },
+    {
+      "id": "rock_plus_3",
+      "name": "石头·III",
+      "rarity": "epic",
+      "cost": 10,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "add_bag", "choice": "rock", "value": 3},
+      "description": "本局获得 3 个石头"
+    },
+    {
+      "id": "scissors_plus_1",
+      "name": "剪刀·I",
+      "rarity": "common",
+      "cost": 3,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "add_bag", "choice": "scissors", "value": 1},
+      "description": "本局获得 1 个剪刀"
+    },
+    {
+      "id": "scissors_plus_2",
+      "name": "剪刀·II",
+      "rarity": "rare",
+      "cost": 5,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "add_bag", "choice": "scissors", "value": 2},
+      "description": "本局获得 2 个剪刀"
+    },
+    {
+      "id": "scissors_plus_3",
+      "name": "剪刀·III",
+      "rarity": "epic",
+      "cost": 10,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "add_bag", "choice": "scissors", "value": 3},
+      "description": "本局获得 3 个剪刀"
+    },
+    {
+      "id": "paper_plus_1",
+      "name": "布·I",
+      "rarity": "common",
+      "cost": 3,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "add_bag", "choice": "paper", "value": 1},
+      "description": "本局获得 1 个布"
+    },
+    {
+      "id": "paper_plus_2",
+      "name": "布·II",
+      "rarity": "rare",
+      "cost": 5,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "add_bag", "choice": "paper", "value": 2},
+      "description": "本局获得 2 个布"
+    },
+    {
+      "id": "paper_plus_3",
+      "name": "布·III",
+      "rarity": "epic",
+      "cost": 10,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "add_bag", "choice": "paper", "value": 3},
+      "description": "本局获得 3 个布"
+    },
+    {
+      "id": "reroll_self",
+      "name": "再来一次",
+      "rarity": "common",
+      "cost": 5,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "reroll_bag"},
+      "description": "随机变换自己的所有出拳"
+    },
+    {
+      "id": "reroll_opponent",
+      "name": "你再来一次",
+      "rarity": "rare",
+      "cost": 10,
+      "refresh_each_match": true,
+      "repeatable_purchase": true,
+      "effect": {"type": "reroll_opponent_bag"},
+      "description": "随机变换对手的所有出拳"
+    },
+    {
+      "id": "gold_plus_1",
+      "name": "钢镚·I",
+      "rarity": "common",
+      "cost": 3,
+      "refresh_each_match": true,
+      "repeatable_purchase": false,
+      "effect": {"type": "gain_gold", "value": 1},
+      "description": "获得 1 金币（不可重复购买）"
+    },
+    {
+      "id": "gold_plus_2",
+      "name": "钢镚·II",
+      "rarity": "rare",
+      "cost": 5,
+      "refresh_each_match": true,
+      "repeatable_purchase": false,
+      "effect": {"type": "gain_gold", "value": 2},
+      "description": "获得 2 金币（不可重复购买）"
+    },
+    {
+      "id": "gold_plus_5",
+      "name": "钢镚·III",
+      "rarity": "epic",
+      "cost": 10,
+      "refresh_each_match": true,
+      "repeatable_purchase": false,
+      "effect": {"type": "gain_gold", "value": 5},
+      "description": "获得 5 金币（不可重复购买）"
+    },
+    {
+      "id": "gold_plus_20",
+      "name": "钢镚(?)·IV",
+      "rarity": "legendary",
+      "cost": 20,
+      "refresh_each_match": true,
+      "repeatable_purchase": false,
+      "effect": {"type": "gain_gold", "value": 20},
+      "description": "获得 20 金币（不可重复购买）"
+    },
+    {
+      "id": "next_match_risk_bonus",
+      "name": "赌狗",
+      "rarity": "rare",
+      "cost": 10,
+      "refresh_each_match": true,
+      "repeatable_purchase": false,
+      "effect": {"type": "next_match_score_swing", "value": 1},
+      "description": "下一局：赢时额外 +1 分，输时额外 -1 分（不可重复购买）"
+    }
+  ]
+}
