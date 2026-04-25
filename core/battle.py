@@ -72,7 +72,7 @@ def _gain_gold_in_battle(player, amount):
             player.add_to_bag("scissors", 1)
     
     if _has_talent_effect(player, "battle_gold_to_random_bag"):
-        _add_random_rps(player, amount)
+        _add_random_rps(player, 1)
 
 
 def _apply_talent_match_start(player):

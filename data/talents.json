@@ -12,7 +12,7 @@
       "name": "点石成拳",
       "cost": 10,
       "effect": {"type": "battle_gold_to_random_bag", "value": 1},
-      "description": "每次在对战中获得金币时，获得等量的随机出拳"
+      "description": "每次在对战中获得金币时，获得 1 个随机出拳"
     },
     {
       "id": "rock_score_plus",
