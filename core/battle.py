@@ -10,9 +10,9 @@ def _add_summary(match_state, text):
 
 
 def _broadcast_to_observers(exclude_ids, msg_data):
-    for cid, conn in clients.items():
+    for cid in clients:
         if cid not in exclude_ids:
-            send_message(cid, msg_data)
+            send_to_player(cid, msg_data)
 
 
 def _build_health_overview(p1, p2):
@@ -279,7 +279,7 @@ def _send_round_result(
 ):
     health_overview = _build_health_overview(p1, p2)
     round_summary = match_state.get("round_summary", [])
-    send_message(clients[p1.id], {
+    send_to_player(p1.id, {
         "type": "round_result",
         "your_choice": choice1,
         "opponent_choice": choice2,
@@ -301,7 +301,7 @@ def _send_round_result(
         "health_overview": health_overview,
         "round_summary": round_summary
     })
-    send_message(clients[p2.id], {
+    send_to_player(p2.id, {
         "type": "round_result",
         "your_choice": choice2,
         "opponent_choice": choice1,
@@ -352,7 +352,7 @@ def _handle_match_end(winner, loser, score1, score2, match_state):
 def _send_match_result(winner, loser, score1, score2, is_draw=False):
     health_overview = _build_health_overview(winner, loser)
     if is_draw:
-        send_message(clients[winner.id], {
+        send_to_player(winner.id, {
             "type": "match_result",
             "result": "draw",
             "winner": None,
@@ -369,7 +369,7 @@ def _send_match_result(winner, loser, score1, score2, is_draw=False):
             "your_lose_streak": winner.lose_streak,
             "health_overview": health_overview
         })
-        send_message(clients[loser.id], {
+        send_to_player(loser.id, {
             "type": "match_result",
             "result": "draw",
             "winner": None,
@@ -388,7 +388,7 @@ def _send_match_result(winner, loser, score1, score2, is_draw=False):
         })
         return
 
-    send_message(clients[winner.id], {
+    send_to_player(winner.id, {
         "type": "match_result",
         "result": "win",
         "winner": winner.name,
@@ -405,7 +405,7 @@ def _send_match_result(winner, loser, score1, score2, is_draw=False):
         "your_lose_streak": winner.lose_streak,
         "health_overview": health_overview
     })
-    send_message(clients[loser.id], {
+    send_to_player(loser.id, {
         "type": "match_result",
         "result": "lose",
         "winner": winner.name,
@@ -486,7 +486,7 @@ def run_match(p1, p2):
     while score1 < 3 and score2 < 3 and rounds_played < max_rounds:
         match_state["round_summary"] = []
         health_overview = _build_health_overview(p1, p2)
-        send_message(clients[p1.id], {
+        send_to_player(p1.id, {
             "type": "choose_rps",
             "bag": p1.rps_bag,
             "opponent": p2.name,
@@ -503,7 +503,7 @@ def run_match(p1, p2):
             "your_lose_streak": p1.lose_streak,
             "health_overview": health_overview
         })
-        send_message(clients[p2.id], {
+        send_to_player(p2.id, {
             "type": "choose_rps",
             "bag": p2.rps_bag,
             "opponent": p1.name,
