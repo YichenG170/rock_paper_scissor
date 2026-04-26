@@ -12,9 +12,9 @@ class Player:
     health: int = 20
     gold: int = 10
     bag_size: int = 7
-    attack: int = 2
+    attack: int = 3
     interest_rate: float = 0.2
-    shop_slots: int = 4
+    shop_slots: int = 5
     pending_score_swing: int = 0
     win_streak: int = 0
     lose_streak: int = 0

@@ -159,7 +159,7 @@ def show_profile_detail(
     health=None,
     health_overview=None,
     gold=None,
-    attack=2,
+    attack=3,
     interest_rate=0.2,
     win_streak=0,
     lose_streak=0
