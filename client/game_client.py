@@ -59,7 +59,7 @@ def percent_text(rate):
 def format_talents(talents):
     if not talents:
         return "无"
-    return " / ".join([f"{t.get('name', '未知')}({t.get('description', '')})" for t in talents[:3]])
+    return " / ".join([f"{t.get('name', '未知')}({t.get('description', '')})" for t in talents])
 
 
 def player_stat_lines(msg):
