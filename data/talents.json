@@ -309,7 +309,7 @@
       "name": "灵活似蛇",
       "cost": 15,
       "effect": {"type": "on_change_rps_health_bonus_malus", "value": 1},
-      "description": "与上一轮出拳不同 ➜ +1 ❤️ ；与上一轮出拳相同 ➜ -2 ❤️ "
+      "description": "每局变换出拳最多+2❤️；相同出拳每次-2❤️"
     },
     {
       "id": "on_set_health_1_gain_gold",

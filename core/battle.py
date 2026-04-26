@@ -609,17 +609,21 @@ def run_match(p1, p2):
 
         if _has_talent_effect(p1, "on_change_rps_health_bonus_malus"):
             last_c1 = match_state["last_choice"].get(p1.id)
-            if choice1 != last_c1 and choice1 is not None:
+            change_bonus_used = match_state.get("change_bonus_used", {}).get(p1.id, 0)
+            if choice1 != last_c1 and choice1 is not None and change_bonus_used < 2:
                 p1.health += 1
-                _add_summary(match_state, f"【{p1.name}】变换出拳+1血")
+                match_state.setdefault("change_bonus_used", {})[p1.id] = change_bonus_used + 1
+                _add_summary(match_state, f"【{p1.name}】变换出拳+1血({change_bonus_used + 1}/2)")
             elif choice1 == last_c1 and choice1 is not None:
                 p1.health -= 2
                 _add_summary(match_state, f"【{p1.name}】相同出拳-2血")
         if _has_talent_effect(p2, "on_change_rps_health_bonus_malus"):
             last_c2 = match_state["last_choice"].get(p2.id)
-            if choice2 != last_c2 and choice2 is not None:
+            change_bonus_used = match_state.get("change_bonus_used", {}).get(p2.id, 0)
+            if choice2 != last_c2 and choice2 is not None and change_bonus_used < 2:
                 p2.health += 1
-                _add_summary(match_state, f"【{p2.name}】变换出拳+1血")
+                match_state.setdefault("change_bonus_used", {})[p2.id] = change_bonus_used + 1
+                _add_summary(match_state, f"【{p2.name}】变换出拳+1血({change_bonus_used + 1}/2)")
             elif choice2 == last_c2 and choice2 is not None:
                 p2.health -= 2
                 _add_summary(match_state, f"【{p2.name}】相同出拳-2血")
