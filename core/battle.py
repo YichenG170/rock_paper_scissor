@@ -298,6 +298,8 @@ def _send_round_result(
         "your_interest_rate": p1.interest_rate,
         "your_win_streak": p1.win_streak,
         "your_lose_streak": p1.lose_streak,
+        "your_talents": list(p1.talents),
+        "opponent_talents": list(p2.talents),
         "health_overview": health_overview,
         "round_summary": round_summary
     })
@@ -320,6 +322,8 @@ def _send_round_result(
         "your_interest_rate": p2.interest_rate,
         "your_win_streak": p2.win_streak,
         "your_lose_streak": p2.lose_streak,
+        "your_talents": list(p2.talents),
+        "opponent_talents": list(p1.talents),
         "health_overview": health_overview,
         "round_summary": round_summary
     })
@@ -480,7 +484,7 @@ def run_match(p1, p2):
     log(f"\n=== {p1.name} VS {p2.name} 开始 ===", "cyan")
     _broadcast_to_observers(
         [p1.id, p2.id],
-        {"type": "match_start", "p1": p1.name, "p2": p2.name, "p1_talents": p1.talents, "p2_talents": p2.talents}
+        {"type": "match_start", "p1": p1.name, "p2": p2.name, "p1_talents": list(p1.talents), "p2_talents": list(p2.talents)}
     )
 
     while score1 < 3 and score2 < 3 and rounds_played < max_rounds:
@@ -501,8 +505,8 @@ def run_match(p1, p2):
             "your_interest_rate": p1.interest_rate,
             "your_win_streak": p1.win_streak,
             "your_lose_streak": p1.lose_streak,
-            "your_talents": p1.talents,
-            "opponent_talents": p2.talents,
+            "your_talents": list(p1.talents),
+            "opponent_talents": list(p2.talents),
             "health_overview": health_overview
         })
         send_to_player(p2.id, {
@@ -520,8 +524,8 @@ def run_match(p1, p2):
             "your_interest_rate": p2.interest_rate,
             "your_win_streak": p2.win_streak,
             "your_lose_streak": p2.lose_streak,
-            "your_talents": p2.talents,
-            "opponent_talents": p1.talents,
+            "your_talents": list(p2.talents),
+            "opponent_talents": list(p1.talents),
             "health_overview": health_overview
         })
 
