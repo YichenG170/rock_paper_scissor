@@ -4,6 +4,8 @@ from utils.logger import log
 from server.network import send_to_player, get_message, clients
 import time
 
+shop_done_event = None
+
 
 RARITY_WEIGHTS = {
     "common": 67,
@@ -183,8 +185,11 @@ def show_shop(player, health_overview=None):
             "owned_talents": player.talents
         })
 
-        msg = get_message(player.id, timeout=0.5)
-        choice = msg.get("choice") if msg else None
+        msg = get_message(player.id, timeout=30)
+        if not msg:
+            log(f"{player.name} 商店超时，自动退出", "yellow")
+            break
+        choice = msg.get("choice")
 
         if choice == "exit" or choice is None:
             break

@@ -521,8 +521,8 @@ def run_match(p1, p2):
             "health_overview": health_overview
         })
 
-        msg1 = get_message(p1.id)
-        msg2 = get_message(p2.id)
+        msg1 = get_message(p1.id, timeout=60)
+        msg2 = get_message(p2.id, timeout=60)
 
         item_used_1 = _apply_battle_item(p1, p2, msg1.get("use_item"), match_state)
         item_used_2 = _apply_battle_item(p2, p1, msg2.get("use_item"), match_state)

@@ -168,7 +168,7 @@ def game_loop():
                     "your_attack": player.attack,
                     "your_interest_rate": player.interest_rate,
                     "your_win_streak": player.win_streak,
-                    "your_lose_streak": player.lose_streak,
+"your_lose_streak": player.lose_streak,
                     "income": income,
                     "health_overview": [{"name": p.name, "health": p.health, "is_eliminated": p.is_eliminated} for p in alive]
                 })
@@ -177,15 +177,8 @@ def game_loop():
         if len(alive) <= 1:
             break
 
-        # 商店阶段
-        log("\n=== 商店阶段 ===", "yellow")
-        for player in alive:
-            if not player.is_eliminated:
-                show_shop(player, _build_health_overview(game_state.players))
-
     winner = next((p for p in game_state.players if not p.is_eliminated), None)
     log(f"\n🏆 游戏结束！最终胜利者是：{winner.name if winner else '未知'} 🎉", "green")
-    
-    # 游戏结束后自动退出
+
     time.sleep(3)
     sys.exit(0)
