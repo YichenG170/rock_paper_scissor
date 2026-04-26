@@ -161,7 +161,7 @@
       "name": "见钱剪开",
       "cost": 20,
       "effect": {"type": "battle_gold_to_scissors", "value": 1},
-      "description": "战斗获得 💰 时 ➜ 获得1个 ✂️ "
+      "description": "战斗获得 💰 时 ➜ 获得1个 ✂️ (不按金币数量)"
     },
     {
       "id": "scissors_quantity_damage",

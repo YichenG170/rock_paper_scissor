@@ -104,8 +104,8 @@ def _gain_gold_in_battle(player, amount):
     player.gold += amount
     
     if _has_talent_effect(player, "battle_gold_to_scissors"):
-        for _ in range(amount):
-            player.add_to_bag("scissors", 1)
+        value = _talent_total(player, "battle_gold_to_scissors")
+        player.add_to_bag("scissors", value)
     
     if _has_talent_effect(player, "battle_gold_to_random_bag"):
         _add_random_rps(player, 1)
