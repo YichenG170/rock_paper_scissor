@@ -15,6 +15,10 @@ def send_message(conn, data):
     except Exception as e:
         log(f"发送消息失败: {e}", "red")
 
+def send_to_player(player_id, data):
+    if player_id in clients:
+        send_message(clients[player_id], data)
+
 def recv_exact(conn, n):
     data = b""
     while len(data) < n:
@@ -34,10 +38,13 @@ def receive_message(conn):
     except:
         return {}
 
-def get_message(player_id):
+def get_message(player_id, timeout=0.1):
     if player_id not in player_queues:
         return {}
-    return player_queues[player_id].get()
+    try:
+        return player_queues[player_id].get(timeout=timeout)
+    except:
+        return {}
 
 def start_network_server(host, port, game_state, on_player_join):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

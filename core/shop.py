@@ -1,7 +1,8 @@
 import json
 import random
 from utils.logger import log
-from server.network import send_message, get_message, clients   # ← 补全 clients 和 get_message
+from server.network import send_to_player, get_message, clients
+import time
 
 
 RARITY_WEIGHTS = {
@@ -164,7 +165,7 @@ def show_shop(player, health_overview=None):
 
     while True:
         next_refresh_cost = _refresh_cost(refresh_count)
-        send_message(clients[player.id], {
+        send_to_player(player.id, {
             "type": "shop_menu",
             "gold": player.gold,
             "health": player.health,
@@ -182,12 +183,20 @@ def show_shop(player, health_overview=None):
             "owned_talents": player.talents
         })
 
-        msg = get_message(player.id)
-        choice = msg.get("choice")
+        msg = get_message(player.id, timeout=0.5)
+        choice = msg.get("choice") if msg else None
 
-        if choice == "exit":
+        if choice == "exit" or choice is None:
             break
         elif choice == "refresh":
+            cost = _refresh_cost(refresh_count)
+            if player.gold < cost:
+                log(f"❌ 金币不足，刷新需要 {cost} 金币", "red")
+            else:
+                player.gold -= cost
+                refresh_count += 1
+                current_offers = _build_shop_slots(items, talents, player.shop_slots, player)
+                log(f"🔄 已刷新商店，花费 {cost} 金币", "cyan")
             cost = _refresh_cost(refresh_count)
             if player.gold < cost:
                 log(f"❌ 金币不足，刷新需要 {cost} 金币", "red")
@@ -235,7 +244,7 @@ def show_shop(player, health_overview=None):
                     refill = _build_shop_slots(items, talents, 1, player)
                     current_offers[slot_idx] = refill[0] if refill else current_offers[slot_idx]
 
-        send_message(clients[player.id], {
+        send_to_player(player.id, {
             "type": "shop_refresh",
             "gold": player.gold,
             "health": player.health,

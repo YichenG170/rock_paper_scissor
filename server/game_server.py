@@ -1,11 +1,11 @@
+import threading
+import time
 from core.game_state import GameState
 from server.network import start_network_server, send_message, clients, get_message
 from core.battle import run_match
 from core.shop import show_shop
 from utils.logger import log
-import threading
 import random
-import time
 import sys
 
 game_state = None
@@ -87,41 +87,70 @@ def game_loop():
         if len(alive) <= 1:
             break
 
+        log(f"存活玩家: {[p.name for p in alive]}", "cyan")
         random.shuffle(alive)
+        log(f"随机顺序: {[p.name for p in alive]}", "cyan")
         matches = []
         for i in range(0, len(alive) - 1, 2):
             matches.append((alive[i], alive[i + 1]))
+        log(f"配对: {[(p1.name, p2.name) for p1, p2 in matches]}", "yellow")
 
-        if len(alive) % 2 == 1:
-            bye = alive[-1]
-            log(f"👋 {bye.name} 本轮轮空，直接进入商店", "yellow")
-
-        for p1, p2 in matches:
-            winner, loser, is_draw = run_match(p1, p2)
-
+        players_in_shop = []
+        
+        def run_match_thread(p1, p2):
+            p1_copy, p2_copy, is_draw = run_match(p1, p2)
             if is_draw:
-                log(f"🤝 {p1.name} 与 {p2.name} 平局，双方不掉血", "yellow")
+                log(f"🤝 {p1.name} 与 {p2.name} 平局", "yellow")
                 p1.win_streak = 0
                 p1.lose_streak = 0
                 p2.win_streak = 0
                 p2.lose_streak = 0
+                p1.health = p1_copy.health
+                p2.health = p2_copy.health
+                players_in_shop.extend([p1, p2])
             else:
-                damage = winner.attack
-                if _has_talent_effect(winner, "double_damage_on_win"):
-                    damage *= 2
-                loser.health -= damage
+                for player in alive:
+                    if player.id == p1.id:
+                        p1.health = p1_copy.health
+                    if player.id == p2.id:
+                        p2.health = p2_copy.health
+                winner = p1 if p1_copy.health > p2_copy.health else p2
+                loser = p2 if p1_copy.health > p2_copy.health else p1
                 winner.win_streak += 1
-                winner.lose_streak = 0
                 loser.lose_streak += 1
-                loser.win_streak = 0
                 if loser.health <= 0:
                     loser.is_eliminated = True
                     log(f"💀 {loser.name} 被淘汰！", "red")
+                players_in_shop.append(winner)
+            log(f"⚔️ {p1.name} VS {p2.name} 结束", "green")
 
-            _send_state_update(p1, game_state.players, "post_match")
-            _send_state_update(p2, game_state.players, "post_match")
+        if len(alive) % 2 == 1:
+            bye = alive[-1]
+            log(f"👋 {bye.name} 本轮轮空，直接进入商店", "yellow")
+            players_in_shop.append(bye)
 
-        # 回合经济结算：基础金币 + 连胜/连败奖励 + 利息（取整，封顶 5）
+        for p1, p2 in matches:
+            t = threading.Thread(target=run_match_thread, args=(p1, p2), daemon=True)
+            t.start()
+            t.join()
+
+        time.sleep(0.5)
+
+        def health_fn():
+            return [{"name": p.name, "health": p.health, "is_eliminated": p.is_eliminated} for p in alive]
+
+        shop_threads = []
+        for p in players_in_shop:
+            if not p.is_eliminated:
+                def run_shop(p, health_fn):
+                    show_shop(p, health_fn())
+                t = threading.Thread(target=run_shop, args=(p, health_fn), daemon=True)
+                shop_threads.append(t)
+                t.start()
+
+        for t in shop_threads:
+            t.join()
+
         for player in alive:
             if player.is_eliminated:
                 continue
@@ -129,6 +158,7 @@ def game_loop():
             player.gold += income["total"]
             conn = clients.get(player.id)
             if conn:
+                from server.network import send_message
                 send_message(conn, {
                     "type": "state_update",
                     "phase": "round_income",
@@ -140,8 +170,12 @@ def game_loop():
                     "your_win_streak": player.win_streak,
                     "your_lose_streak": player.lose_streak,
                     "income": income,
-                    "health_overview": _build_health_overview(game_state.players)
+                    "health_overview": [{"name": p.name, "health": p.health, "is_eliminated": p.is_eliminated} for p in alive]
                 })
+
+        alive = [p for p in game_state.players if not p.is_eliminated]
+        if len(alive) <= 1:
+            break
 
         # 商店阶段
         log("\n=== 商店阶段 ===", "yellow")

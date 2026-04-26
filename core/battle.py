@@ -1,5 +1,5 @@
 from utils.logger import log
-from server.network import send_message, get_message, clients   # ← 补全 clients
+from server.network import send_to_player, get_message, clients
 from core.rps_bag import generate_initial_bag
 import random
 
