@@ -56,9 +56,10 @@ def _has_talent_effect(player, effect_type):
             return True
     return False
 
-def start_server(host_name):
+def start_server(host_name, max_players=4):
     global game_state
     game_state = GameState()
+    game_state.max_players = max_players
 
     def on_player_join(player, conn):
         log(f"✅ {player.name} 加入游戏 ({len(game_state.players)}/{game_state.max_players})", "green")

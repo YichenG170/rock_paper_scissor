@@ -11,7 +11,15 @@ if __name__ == "__main__":
     name = input("请输入你的玩家名称: ").strip() or "玩家"
 
     if mode == "1":
-        start_server(name)
+        while True:
+            try:
+                max_players = int(input("请输入玩家数量 (2-8): ").strip())
+                if 2 <= max_players <= 8:
+                    break
+                print("请输入2-8之间的数字")
+            except ValueError:
+                print("请输入有效数字")
+        start_server(name, max_players)
     elif mode == "2":
         ip = input("请输入房主IP地址 (直接回车 = 本机测试): ").strip() or "127.0.0.1"
         start_client(name, ip)
