@@ -29,6 +29,13 @@ def _owned_item_count(player, item_id):
     return sum(1 for i in player.items if i.get("id") == item_id)
 
 
+def _available_items(player, items):
+    return [
+        item for item in items
+        if item.get("repeatable_purchase", True) or _owned_item_count(player, item.get("id")) == 0
+    ]
+
+
 def _can_buy_item(player, item):
     if item.get("repeatable_purchase", True):
         return True
@@ -51,7 +58,12 @@ def _apply_talent_on_buy(player, talent):
     if effect_type == "shop_slots_plus" and value > 0:
         player.shop_slots += value
     elif effect_type == "attack_plus" and value > 0:
-        player.attack += value
+        has_battle_tutor = any(t.get("id") == "battle_tutor" for t in player.talents)
+        has_brutal_edge = any(t.get("id") == "brutal_edge" for t in player.talents)
+        if has_battle_tutor and has_brutal_edge:
+            player.attack += 2
+        else:
+            player.attack += value
     elif effect_type == "interest_rate_plus" and value > 0:
         player.interest_rate += value / 100 if value > 1 else value
     elif effect_type == "bag_size_plus" and value > 0:
@@ -90,7 +102,8 @@ def _all_offers(items, talents):
     return offers
 
 
-def _roll_item_offer(items):
+def _roll_item_offer(items, player):
+    items = _available_items(player, items)
     if not items:
         return None
     rolled_rarity = _roll_rarity()
@@ -134,7 +147,7 @@ def _build_shop_slots(items, talents, slot_count, player):
         if random.random() < TALENT_SLOT_RATE:
             offer = _roll_talent_offer(talents, player)
         if offer is None:
-            offer = _roll_item_offer(items)
+            offer = _roll_item_offer(items, player)
         if offer is None:
             offer = _roll_talent_offer(talents, player)
         if offer is not None:

@@ -6,7 +6,7 @@ class Player:
     # 必须提供的字段（放在最前面）
     id: str
     name: str
-    rps_bag: Dict[str, int]          # 出拳包是必须的
+    rps_bag: Dict[str, int]
 
     # 带默认值的字段
     health: int = 20
@@ -18,6 +18,7 @@ class Player:
     pending_score_swing: int = 0
     win_streak: int = 0
     lose_streak: int = 0
+    rock_streak_cnt: int = 0
     talents: List[dict] = field(default_factory=list)
     items: List[dict] = field(default_factory=list)
     is_eliminated: bool = False

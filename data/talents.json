@@ -12,35 +12,35 @@
       "name": "点石成拳",
       "cost": 10,
       "effect": {"type": "battle_gold_to_random_bag", "value": 1},
-      "description": "每次在对战中获得金币时，获得 1 个随机出拳"
+      "description": "战斗中获得金币时 ➜ 获得1个随机出拳"
     },
     {
       "id": "rock_score_plus",
       "name": "磐！石！",
       "cost": 30,
       "effect": {"type": "rock_win_score_bonus", "value": 1},
-      "description": "你的石头在获胜时额外 +1 分"
+      "description": "石头获胜时 ➜ 额外+1分"
     },
     {
       "id": "last_rock_shift",
       "name": "生生不息",
       "cost": 10,
       "effect": {"type": "on_last_rock_convert_to_rock", "value": 1},
-      "description": "若你打出最后一个石头，结算后随机把一个其他出拳变成石头"
+      "description": "打出最后1个石头后 ➜ 随机1个出拳变石头"
     },
     {
       "id": "berserker_oath",
       "name": "野蛮人",
       "cost": 20,
       "effect": {"type": "double_damage_on_win", "value": 1},
-      "description": "你战胜对手时造成双倍伤害；第一轮出拳由系统随机"
+      "description": "战胜时 ➜ 伤害翻倍；猜拳大师会接管你的第一轮出拳"
     },
     {
       "id": "rock_corrupt",
       "name": "连接大脑",
       "cost": 15,
       "effect": {"type": "on_play_rock_convert_opponent_to_rock", "value": 1},
-      "description": "你打出石头后，对手随机一个出拳变成石头"
+      "description": "打出石头时 ➜ 对手1个出拳变石头"
     },
 
     {
@@ -48,14 +48,14 @@
       "name": "妙手回春",
       "cost": 20,
       "effect": {"type": "health_plus", "value": 4},
-      "description": "立即获得 +4 血量）"
+      "description": "立即 +4 血量）"
     },
     {
       "id": "battle_tutor",
       "name": "👊 左拳高伤害",
       "cost": 10,
       "effect": {"type": "attack_plus", "value": 1},
-      "description": "杀伤力 +1"
+      "description": "杀伤力 +1；如果同时拥有 [右拳伤害高]，则杀伤力 +2"
     },
     {
       "id": "golden_compound",
@@ -76,70 +76,70 @@
       "name": "石头？",
       "cost": 10,
       "effect": {"type": "battle_start_add_bag", "choice": "rock", "value": 1},
-      "description": "每场对战开始时额外获得 1 个石头"
+      "description": "开战时 ➜ 额外1个石头"
     },
     {
       "id": "blade_bootcamp",
       "name": "剪刀？",
       "cost": 10,
       "effect": {"type": "battle_start_add_bag", "choice": "scissors", "value": 1},
-      "description": "每场对战开始时额外获得 1 个剪刀"
+      "description": "开战时 ➜ 额外1个剪刀"
     },
     {
       "id": "tide_bootcamp",
       "name": "布？",
       "cost": 10,
       "effect": {"type": "battle_start_add_bag", "choice": "paper", "value": 1},
-      "description": "每场对战开始时额外获得 1 个布"
+      "description": "开战时 ➜ 额外1个布"
     },
     {
       "id": "chaos_bootcamp",
       "name": "混沌训练营",
       "cost": 15,
       "effect": {"type": "battle_start_add_random", "value": 2},
-      "description": "每场对战开始时随机获得 2 个出拳"
+      "description": "开战时 ➜ 随机获得 2 个出拳"
     },
     {
       "id": "brutal_edge",
       "name": "右拳伤害高 👊",
       "cost": 10,
       "effect": {"type": "attack_plus", "value": 1},
-      "description": "获得 +1 杀伤力"
+      "description": "杀伤力 +1；如果同时拥有 [左拳伤害高]，则杀伤力 +2"
     },
     {
       "id": "paper_heal_on_win",
       "name": "绷带",
       "cost": 20,
       "effect": {"type": "paper_win_heal", "value": 1},
-      "description": "使用布获胜后，回复 1 点血量"
+      "description": "布获胜时 ➜ 回复1血量"
     },
     {
       "id": "paper_reroll_all",
       "name": "包罗万象",
-      "cost": 10,
+      "cost": 20,
       "effect": {"type": "on_play_paper_reroll_all", "value": 1},
-      "description": "使用布后，随机变换自己的所有出拳"
+      "description": "打出布时 ➜ 随机重置所有出拳"
     },
     {
       "id": "paper_transform_bonus",
-      "name": "再来一个",
+      "name": "一生二",
       "cost": 15,
       "effect": {"type": "paper_transform_bonus", "value": 1},
-      "description": "每次通过变换获得布时，额外获得 1 个布"
+      "description": "变换获得布时 ➜ 获得额外1个布"
     },
     {
       "id": "paper_on_lose_gain",
       "name": "再来一次",
       "cost": 10,
       "effect": {"type": "on_lose_if_has_paper_gain", "value": 1},
-      "description": "失败后若拥有布，则获得 1 个布"
+      "description": "失败时若有布 ➜ 获得1个布"
     },
     {
       "id": "paper_overload",
       "name": "人！海！战！术！",
       "cost": 30,
       "effect": {"type": "paper_over_5_win_bonus", "value": 3},
-      "description": "若拥有超过 5 个布，赢得一局后直接 +3 分"
+      "description": "布>5时获胜 ➜ +3分"
     },
 
     {
@@ -147,35 +147,35 @@
       "name": "剪！破！钱！袋！",
       "cost": 30,
       "effect": {"type": "scissors_win_drain_gold", "value": 8},
-      "description": "使用剪刀获胜后，偷取对手 8 金币"
+      "description": "剪刀获胜时 ➜ 偷取8金币"
     },
     {
       "id": "scissors_damage_amp",
       "name": "剪刀手",
       "cost": 20,
       "effect": {"type": "scissors_win_damage_plus", "value": 1},
-      "description": "使用剪刀获胜后，本场对对手伤害 +1"
+      "description": "剪刀获胜时 ➜ 本场伤害+1"
     },
     {
       "id": "scissors_gold_to_scissors",
       "name": "见钱剪开",
       "cost": 20,
       "effect": {"type": "battle_gold_to_scissors", "value": 1},
-      "description": "每次在对战中获得金币时，获得 1 个剪刀"
+      "description": "战斗获得金币时 ➜ 获得1个剪刀"
     },
     {
       "id": "scissors_quantity_damage",
       "name": "物尽其用",
       "cost": 10,
       "effect": {"type": "scissors_count_damage_bonus", "value": 1},
-      "description": "对敌人造成伤害时，每拥有 2 个剪刀，伤害 +1"
+      "description": "获胜时，每拥有2个剪刀 ➜ 伤害+1"
     },
     {
       "id": "scissors_to_paper",
       "name": "剪刀，布！",
       "cost": 15,
       "effect": {"type": "on_play_scissors_convert_opp_to_paper", "value": 1},
-      "description": "使用剪刀后，将对手随机一个出拳变成布"
+      "description": "打出剪刀时 ➜ 对手1个出拳变布"
     },
 
     {
@@ -183,7 +183,147 @@
       "name": "连招大师",
       "cost": 10,
       "effect": {"type": "consecutive_same_choice_gold", "value": 2},
-      "description": "连续出两个相同拳型时，获得 2 金币"
+      "description": "连续相同出拳时 ➜ 获得 2 金币"
+    },
+    {
+      "id": "all_rock_transmute",
+      "name": "疯！狂！原！石！人！",
+      "cost": 30,
+      "effect": {"type": "all_to_rock", "value": 1},
+      "description": "双方所有出拳变成石头"
+    },
+    {
+      "id": "rock_vs_rock_score",
+      "name": "掰手腕",
+      "cost": 20,
+      "effect": {"type": "rock_vs_rock_score", "value": 1},
+      "description": "石头平局时 ➜ 石头多者获得1分"
+    },
+    {
+      "id": "double_rock_start",
+      "name": "山",
+      "cost": 15,
+      "effect": {"type": "battle_start_rock_double", "value": 1},
+      "description": "开战时 ➜ 石头数量翻倍"
+    },
+    {
+      "id": "rock_streak_bonus",
+      "name": "一根筋",
+      "cost": 10,
+      "effect": {"type": "rock_streak_bonus", "value": 1},
+      "description": "连续打出5次石头 ➜ 获得3分+30金币"
+    },
+    {
+      "id": "on_paper_win_random_rock_scissors",
+      "name": "偷天换日",
+      "cost": 10,
+      "effect": {"type": "on_paper_win_random_rock_scissors", "value": 1},
+      "description": "布获胜时 ➜ 随机获得1个石头或剪刀"
+    },
+    {
+      "id": "on_change_rps_gain_gold_by_paper",
+      "name": "印钞机",
+      "cost": 20,
+      "effect": {"type": "on_change_rps_gain_gold_by_paper", "value": 1},
+      "description": "变换出拳后 ➜ 每1个布获得1金币"
+    },
+    {
+      "id": "on_damage_extra_by_change_rps_quarter",
+      "name": "超！集！变！变！变！",
+      "cost": 30,
+      "effect": {"type": "on_damage_extra_by_change_rps_quarter", "value": 1},
+      "description": "造成伤害时 ➜ 额外造成1/4本局变换出拳的伤害(上限5)"
+    },
+    {
+      "id": "on_first_paper_lose_heal",
+      "name": "止血带",
+      "cost": 10,
+      "effect": {"type": "on_first_paper_lose_heal", "value": 1},
+      "description": "首次布失败时 ➜ 回复1血量"
+    },
+    {
+      "id": "on_start_convert_rock_scissors_if_more_health",
+      "name": "仗势欺人",
+      "cost": 15,
+      "effect": {"type": "on_start_convert_rock_scissors_if_more_health", "value": 1},
+      "description": "血量>对手时 ➜ 随机变换所有石头剪刀"
+    },
+    {
+      "id": "on_scissors_opp_bag_greater_than_rounds",
+      "name": "剪断",
+      "cost": 20,
+      "effect": {"type": "on_scissors_opp_bag_greater_than_rounds", "value": 1},
+      "description": "打出剪刀时，若对手出拳>剩余轮数 ➜ 对手随机失去1个出拳"
+    },
+    {
+      "id": "on_health_loss_gain_scissors_gold",
+      "name": "嗜血",
+      "cost": 15,
+      "effect": {"type": "on_health_loss_gain_scissors_gold", "value": 1},
+      "description": "战斗中血量减少时 ➜ 获得1个剪刀+2金币"
+    },
+    {
+      "id": "on_scissors_win_drain_health_same",
+      "name": "对赌协议",
+      "cost": 10,
+      "effect": {"type": "on_scissors_win_drain_health_same", "value": 1},
+      "description": "剪刀获胜时 ➜ 对手-1血；剪刀失败时 ➜ 自己-1血"
+    },
+    {
+      "id": "on_first_scissors_win_swap_health_by_gold",
+      "name": "偷！天！换！日！",
+      "cost": 30,
+      "effect": {"type": "on_first_scissors_win_swap_health_by_gold", "value": 1},
+      "description": "首次剪刀获胜时若有≥50金币 ➜ 消耗50金币互换血量"
+    },
+    {
+      "id": "on_scissors_win_chance_2damage",
+      "name": "盘外招",
+      "cost": 10,
+      "effect": {"type": "on_scissors_win_chance_2damage", "value": 1},
+      "description": "剪刀获胜时 ➜ 10%概率-2血并使对手-1分"
+    },
+    {
+      "id": "on_first_score_convert_all_same",
+      "name": "装孙子",
+      "cost": 20,
+      "effect": {"type": "on_first_score_convert_all_same", "value": 1},
+      "description": "任意玩家首个到达2分时 ➜ 该玩家所有出拳变同一种"
+    },
+    {
+      "id": "on_use_item_lose_gold",
+      "name": "光明正大",
+      "cost": 10,
+      "effect": {"type": "on_use_item_lose_gold", "value": 3},
+      "description": "玩家使用道具时 ➜ 失去3金币"
+    },
+    {
+      "id": "on_set_health_20_damage_double",
+      "name": "背！水！一！战！",
+      "cost": 30,
+      "effect": {"type": "on_set_health_20_damage_double", "value": 1},
+      "description": "开战时血量设为10；失败时受到的伤害翻倍"
+    },
+    {
+      "id": "on_change_rps_health_bonus_malus",
+      "name": "灵活似蛇",
+      "cost": 15,
+      "effect": {"type": "on_change_rps_health_bonus_malus", "value": 1},
+      "description": "与上一轮出拳不同 ➜ +1血；与上一轮出拳相同 ➜ -2血"
+    },
+    {
+      "id": "on_set_health_1_gain_gold",
+      "name": "梭哈",
+      "cost": 10,
+      "effect": {"type": "on_set_health_1_gain_gold", "value": 1},
+      "description": "开战时血量设为1；每以此法失去1血量获得3金币"
+    },
+    {
+      "id": "on_zero_score_lose_gold",
+      "name": "人情世故",
+      "cost": 10,
+      "effect": {"type": "on_zero_score_lose_gold", "value": 1},
+      "description": "0分失败时 ➜ 对手失去15金币"
     }
   ]
 }
