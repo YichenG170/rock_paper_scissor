@@ -33,7 +33,8 @@ def _owned_item_count(player, item_id):
 
 
 def _available_items(player, items):
-    return items
+    owned_ids = {item.get("id") for item in player.items if not item.get("repeatable_purchase", True)}
+    return [i for i in items if i.get("id") not in owned_ids]
 
 
 def _can_buy_item(player, item):
@@ -154,8 +155,7 @@ def _build_shop_slots(items, talents, slot_count, player):
 
 
 def _refresh_cost(refresh_count):
-    # 第一次刷新 1 金币，之后每次在当前回合递增 1。
-    return 1 + refresh_count
+    return refresh_count + 2
 
 def show_shop(player, health_overview=None):
     items = load_shop_items()
@@ -195,14 +195,6 @@ def show_shop(player, health_overview=None):
         if choice == "exit" or choice is None:
             break
         elif choice == "refresh":
-            cost = _refresh_cost(refresh_count)
-            if player.gold < cost:
-                log(f"❌ 金币不足，刷新需要 {cost} 金币", "red")
-            else:
-                player.gold -= cost
-                refresh_count += 1
-                current_offers = _build_shop_slots(items, talents, player.shop_slots, player)
-                log(f"🔄 已刷新商店，花费 {cost} 金币", "cyan")
             cost = _refresh_cost(refresh_count)
             if player.gold < cost:
                 log(f"❌ 金币不足，刷新需要 {cost} 金币", "red")
