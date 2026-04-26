@@ -4,6 +4,17 @@ from core.rps_bag import generate_initial_bag
 import random
 
 
+def _add_summary(match_state, text):
+    match_state["round_summary"].append(text)
+    log(text, "cyan")
+
+
+def _broadcast_to_observers(exclude_ids, msg_data):
+    for cid, conn in clients.items():
+        if cid not in exclude_ids:
+            send_message(cid, msg_data)
+
+
 def _build_health_overview(p1, p2):
     return [
         {"name": p1.name, "health": p1.health, "is_eliminated": p1.is_eliminated},
@@ -263,9 +274,11 @@ def _send_round_result(
     round_no,
     max_rounds,
     item_used_1,
-    item_used_2
+    item_used_2,
+    match_state
 ):
     health_overview = _build_health_overview(p1, p2)
+    round_summary = match_state.get("round_summary", [])
     send_message(clients[p1.id], {
         "type": "round_result",
         "your_choice": choice1,
@@ -285,7 +298,8 @@ def _send_round_result(
         "your_interest_rate": p1.interest_rate,
         "your_win_streak": p1.win_streak,
         "your_lose_streak": p1.lose_streak,
-        "health_overview": health_overview
+        "health_overview": health_overview,
+        "round_summary": round_summary
     })
     send_message(clients[p2.id], {
         "type": "round_result",
@@ -306,8 +320,22 @@ def _send_round_result(
         "your_interest_rate": p2.interest_rate,
         "your_win_streak": p2.win_streak,
         "your_lose_streak": p2.lose_streak,
-        "health_overview": health_overview
+        "health_overview": health_overview,
+        "round_summary": round_summary
     })
+
+    _broadcast_to_observers(
+        [p1.id, p2.id],
+        {
+            "type": "observer_round",
+            "p1": p1.name, "p2": p2.name,
+            "choice1": choice1, "choice2": choice2,
+            "round_winner": round_winner_name,
+            "round_no": round_no,
+            "score1": score1, "score2": score2,
+            "round_summary": round_summary
+        }
+    )
 
 
 def _handle_match_end(winner, loser, score1, score2, match_state):
@@ -424,7 +452,8 @@ def run_match(p1, p2):
         "change_rps_count": {p1.id: 0, p2.id: 0},
         "first_paper_lose_used": {p1.id: False, p2.id: False},
         "first_to_score": {p1.id: None, p2.id: None},
-        "damage_multiplier": {p1.id: 1, p2.id: 1}
+        "damage_multiplier": {p1.id: 1, p2.id: 1},
+        "round_summary": []
     }
     _apply_talent_match_start(p1, match_state)
     _apply_talent_match_start(p2, match_state)
@@ -449,8 +478,13 @@ def run_match(p1, p2):
     p1.pending_score_swing = 0
     p2.pending_score_swing = 0
     log(f"\n=== {p1.name} VS {p2.name} 开始 ===", "cyan")
+    _broadcast_to_observers(
+        [p1.id, p2.id],
+        {"type": "match_start", "p1": p1.name, "p2": p2.name}
+    )
 
     while score1 < 3 and score2 < 3 and rounds_played < max_rounds:
+        match_state["round_summary"] = []
         health_overview = _build_health_overview(p1, p2)
         send_message(clients[p1.id], {
             "type": "choose_rps",
@@ -492,6 +526,10 @@ def run_match(p1, p2):
 
         item_used_1 = _apply_battle_item(p1, p2, msg1.get("use_item"), match_state)
         item_used_2 = _apply_battle_item(p2, p1, msg2.get("use_item"), match_state)
+        if item_used_1:
+            _add_summary(match_state, f"【{p1.name}】使用道具 {item_used_1}")
+        if item_used_2:
+            _add_summary(match_state, f"【{p2.name}】使用道具 {item_used_2}")
         choice1 = msg1.get("choice")
         choice2 = msg2.get("choice")
 
@@ -556,27 +594,27 @@ def run_match(p1, p2):
 
         if choice1 == "paper" and _has_talent_effect(p1, "on_play_paper_reroll_all"):
             p1.rps_bag = generate_initial_bag(p1.bag_size)
-            log(f"{p1.name} 全部出拳随机重置", "magenta")
+            _add_summary(match_state, f"【{p1.name}】全部出拳随机重置")
         if choice2 == "paper" and _has_talent_effect(p2, "on_play_paper_reroll_all"):
             p2.rps_bag = generate_initial_bag(p2.bag_size)
-            log(f"{p2.name} 全部出拳随机重置", "magenta")
+            _add_summary(match_state, f"【{p2.name}】全部出拳随机重置")
 
         if _has_talent_effect(p1, "on_change_rps_health_bonus_malus"):
             last_c1 = match_state["last_choice"].get(p1.id)
             if choice1 != last_c1 and choice1 is not None:
                 p1.health += 1
-                log(f"{p1.name} [心血来潮] 变换出拳+1血", "green")
+                _add_summary(match_state, f"【{p1.name}】变换出拳+1血")
             elif choice1 == last_c1 and choice1 is not None:
                 p1.health -= 2
-                log(f"{p1.name} [心血来潮] 相同出拳-2血", "red")
+                _add_summary(match_state, f"【{p1.name}】相同出拳-2血")
         if _has_talent_effect(p2, "on_change_rps_health_bonus_malus"):
             last_c2 = match_state["last_choice"].get(p2.id)
             if choice2 != last_c2 and choice2 is not None:
                 p2.health += 1
-                log(f"{p2.name} [心血来潮] 变换出拳+1血", "green")
+                _add_summary(match_state, f"【{p2.name}】变换出拳+1血")
             elif choice2 == last_c2 and choice2 is not None:
                 p2.health -= 2
-                log(f"{p2.name} [心血来潮] 相同出拳-2血", "red")
+                _add_summary(match_state, f"【{p2.name}】相同出拳-2血")
 
         rounds_played += 1
 
@@ -598,7 +636,7 @@ def run_match(p1, p2):
                         log(f"{p2.name} [掰手腕] 石头更多，获得1分！({score1}:{score2})", "cyan")
                     _send_round_result(
                         p1, p2, choice1, choice2, score1, score2, winner.name,
-                        rounds_played, max_rounds, item_used_1, item_used_2
+                        rounds_played, max_rounds, item_used_1, item_used_2, match_state
                     )
                     rounds_played += 1
                     continue
@@ -611,7 +649,7 @@ def run_match(p1, p2):
             log("平局！双方出拳相同", "yellow")
             _send_round_result(
                 p1, p2, choice1, choice2, score1, score2, None,
-                rounds_played, max_rounds, item_used_1, item_used_2
+                rounds_played, max_rounds, item_used_1, item_used_2, match_state
             )
             if match_state["last_rock_trigger"][p1.id]:
                 _convert_random_non_rock_to_rock(p1)
@@ -640,7 +678,7 @@ def run_match(p1, p2):
                     new_type = random.choice(["rock", "scissors", "paper"])
                     total = sum(p1.rps_bag.values())
                     p1.rps_bag = {new_type: total, "rock": 0, "scissors": 0, "paper": 0}
-                    log(f"{p1.name} [装孙子] 首个达到2分，所有出拳变成{new_type}！", "cyan")
+                    _add_summary(match_state, f"【{p1.name}】首个达到2分，所有出拳变成{new_type}")
             if choice1 == "paper":
                 _handle_paper_win_effects(p1, p2, match_state)
             if choice1 == "scissors":
@@ -654,7 +692,7 @@ def run_match(p1, p2):
             log(f"{p1.name} 获胜本小局！({score1}:{score2})", "green")
             _send_round_result(
                 p1, p2, choice1, choice2, score1, score2, p1.name,
-                rounds_played, max_rounds, item_used_1, item_used_2
+                rounds_played, max_rounds, item_used_1, item_used_2, match_state
             )
         elif choice1 and choice2:
             _handle_consecutive_choice(p2, match_state["last_choice"][p2.id], choice2)
@@ -674,7 +712,7 @@ def run_match(p1, p2):
                     new_type = random.choice(["rock", "scissors", "paper"])
                     total = sum(p2.rps_bag.values())
                     p2.rps_bag = {new_type: total, "rock": 0, "scissors": 0, "paper": 0}
-                    log(f"{p2.name} [装孙子] 首个达到2分，所有出拳变成{new_type}！", "cyan")
+                    _add_summary(match_state, f"【{p2.name}】首个达到2分，所有出拳变成{new_type}")
             if choice2 == "paper":
                 _handle_paper_win_effects(p2, p1, match_state)
             if choice2 == "scissors":
@@ -688,13 +726,13 @@ def run_match(p1, p2):
             log(f"{p2.name} 获胜本小局！({score1}:{score2})", "green")
             _send_round_result(
                 p1, p2, choice1, choice2, score1, score2, p2.name,
-                rounds_played, max_rounds, item_used_1, item_used_2
+                rounds_played, max_rounds, item_used_1, item_used_2, match_state
             )
         else:
             log("本小局因无效出拳跳过", "yellow")
             _send_round_result(
                 p1, p2, choice1, choice2, score1, score2, None,
-                rounds_played, max_rounds, item_used_1, item_used_2
+                rounds_played, max_rounds, item_used_1, item_used_2, match_state
             )
 
         if match_state["last_rock_trigger"][p1.id]:
@@ -717,30 +755,54 @@ def run_match(p1, p2):
         log(f"\n🎉 {winner.name} 赢得本场对战！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         _send_match_result(winner, loser, score1, score2)
+        _broadcast_to_observers(
+            [p1.id, p2.id],
+            {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
+        )
+        return p1, p2, False
 
     elif score2 >= 3:
         winner, loser = p2, p1
         log(f"\n🎉 {winner.name} 赢得本场对战！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         _send_match_result(winner, loser, score1, score2)
+        _broadcast_to_observers(
+            [p1.id, p2.id],
+            {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
+        )
+        return p1, p2, False
 
     elif score1 > score2:
         winner, loser = p1, p2
         log(f"\n⏱️ 5回合结束，{winner.name} 以比分优势获胜！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         _send_match_result(winner, loser, score1, score2)
-
+        _broadcast_to_observers(
+            [p1.id, p2.id],
+            {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
+        )
+        return p1, p2, False
+    
     elif score2 > score1:
         winner, loser = p2, p1
         log(f"\n⏱️ 5回合结束，{winner.name} 以比分优势获胜！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         _send_match_result(winner, loser, score1, score2)
+        _broadcast_to_observers(
+            [p1.id, p2.id],
+            {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
+        )
+        return p1, p2, False
     
     else:
         log("\n⏱️ 5回合结束，双方平局，本场不掉血", "yellow")
         _handle_match_end(p1, p1, score1, score2, match_state)
         _handle_match_end(p2, p2, score2, score1, match_state)
         _send_match_result(p1, p2, score1, score2, is_draw=True)
+        _broadcast_to_observers(
+            [p1.id, p2.id],
+            {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": "平局", "score": f"{score1}:{score2}"}
+        )
         p1.gold += 1
         p2.gold += 1
         return p1, p2, True

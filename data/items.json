@@ -8,7 +8,7 @@
       "refresh_each_match": false,
       "repeatable_purchase": true,
       "effect": {"type": "add_bag", "choice": "rock", "value": 1},
-      "description": "本局获得 1 个石头"
+      "description": "本局获得 1 🗻"
     },
     {
       "id": "rock_plus_2",
@@ -18,7 +18,7 @@
       "refresh_each_match": false,
       "repeatable_purchase": true,
       "effect": {"type": "add_bag", "choice": "rock", "value": 2},
-      "description": "本局获得 2 个石头"
+      "description": "本局获得 2 🗻"
     },
     {
       "id": "rock_plus_3",
@@ -28,7 +28,7 @@
       "refresh_each_match": false,
       "repeatable_purchase": true,
       "effect": {"type": "add_bag", "choice": "rock", "value": 3},
-      "description": "本局获得 3 个石头"
+      "description": "本局获得 3 🗻"
     },
     {
       "id": "scissors_plus_1",
@@ -38,7 +38,7 @@
       "refresh_each_match": false,
       "repeatable_purchase": true,
       "effect": {"type": "add_bag", "choice": "scissors", "value": 1},
-      "description": "本局获得 1 个剪刀"
+      "description": "本局获得 1 ✂️"
     },
     {
       "id": "scissors_plus_2",
@@ -48,7 +48,7 @@
       "refresh_each_match": false,
       "repeatable_purchase": true,
       "effect": {"type": "add_bag", "choice": "scissors", "value": 2},
-      "description": "本局获得 2 个剪刀"
+      "description": "本局获得 2 ✂️"
     },
     {
       "id": "scissors_plus_3",
@@ -58,7 +58,7 @@
       "refresh_each_match": false,
       "repeatable_purchase": true,
       "effect": {"type": "add_bag", "choice": "scissors", "value": 3},
-      "description": "本局获得 3 个剪刀"
+      "description": "本局获得 3 ✂️"
     },
     {
       "id": "paper_plus_1",
@@ -68,7 +68,7 @@
       "refresh_each_match": false,
       "repeatable_purchase": true,
       "effect": {"type": "add_bag", "choice": "paper", "value": 1},
-      "description": "本局获得 1 个布"
+      "description": "本局获得 1 🧻"
     },
     {
       "id": "paper_plus_2",
@@ -78,7 +78,7 @@
       "refresh_each_match": false,
       "repeatable_purchase": true,
       "effect": {"type": "add_bag", "choice": "paper", "value": 2},
-      "description": "本局获得 2 个布"
+      "description": "本局获得 2 🧻"
     },
     {
       "id": "paper_plus_3",
@@ -88,7 +88,7 @@
       "refresh_each_match": false,
       "repeatable_purchase": true,
       "effect": {"type": "add_bag", "choice": "paper", "value": 3},
-      "description": "本局获得 3 个布"
+      "description": "本局获得 3 🧻"
     },
     {
       "id": "reroll_self",
@@ -118,7 +118,7 @@
       "refresh_each_match": true,
       "repeatable_purchase": false,
       "effect": {"type": "gain_gold", "value": 1},
-      "description": "获得 1 金币（不可重复购买）"
+      "description": "获得 1 💰"
     },
     {
       "id": "gold_plus_2",
@@ -128,7 +128,7 @@
       "refresh_each_match": true,
       "repeatable_purchase": false,
       "effect": {"type": "gain_gold", "value": 2},
-      "description": "获得 2 金币（不可重复购买）"
+      "description": "获得 2 💰"
     },
     {
       "id": "gold_plus_5",
@@ -138,7 +138,7 @@
       "refresh_each_match": true,
       "repeatable_purchase": false,
       "effect": {"type": "gain_gold", "value": 5},
-      "description": "获得 5 金币（不可重复购买）"
+      "description": "获得 5 💰"
     },
     {
       "id": "gold_plus_20",
@@ -148,17 +148,17 @@
       "refresh_each_match": true,
       "repeatable_purchase": false,
       "effect": {"type": "gain_gold", "value": 20},
-      "description": "获得 20 金币（不可重复购买）"
+      "description": "获得 20 💰"
     },
     {
       "id": "next_match_risk_bonus",
       "name": "赌狗",
       "rarity": "rare",
       "cost": 5,
-      "refresh_each_match": false,
-      "repeatable_purchase": true,
+      "refresh_each_match": true,
+      "repeatable_purchase": false,
       "effect": {"type": "next_match_score_swing", "value": 1},
-      "description": "下一局：赢时额外 +1 分，输时额外 -1 分（不可重复购买）"
+      "description": "下一局：赢时额外 +1 🏆 ，输时额外 -1 🏆"
     }
   ]
 }

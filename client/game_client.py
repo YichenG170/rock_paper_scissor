@@ -256,6 +256,7 @@ def start_client(name, server_ip):
             your_health = msg.get("your_health", 0)
             opponent_health = msg.get("opponent_health", 0)
             health_overview = msg.get("health_overview", [])
+            round_summary = msg.get("round_summary", [])
             item_line = ""
             if item_you or item_op:
                 item_line = f" | 你用道具: {item_you or '无'} / 对手用道具: {item_op or '无'}"
@@ -269,7 +270,8 @@ def start_client(name, server_ip):
                         f"比分: {score_you}:{score_opponent}",
                         f"血量: 你 ❤️ {your_health} / 对手 ❤️ {opponent_health}",
                         f"道具信息: 你 {item_you or '无'} / 对手 {item_op or '无'}{item_line and ''}",
-                    ] + health_board_lines(health_overview)
+                    ] + (["--- 本轮事件 ---"] + round_summary if round_summary else []) +
+                    health_board_lines(health_overview)
                 )
             else:
                 white_panel(
@@ -280,7 +282,8 @@ def start_client(name, server_ip):
                         f"比分: {score_you}:{score_opponent}",
                         f"血量: 你 ❤️ {your_health} / 对手 ❤️ {opponent_health}",
                         f"道具信息: 你 {item_you or '无'} / 对手 {item_op or '无'}{item_line and ''}",
-                    ] + health_board_lines(health_overview)
+                    ] + (["--- 本轮事件 ---"] + round_summary if round_summary else []) +
+                    health_board_lines(health_overview)
                 )
 
         elif msg["type"] == "match_result":
