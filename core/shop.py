@@ -10,7 +10,7 @@ RARITY_WEIGHTS = {
     "epic": 10,
     "legendary": 3,
 }
-TALENT_SLOT_RATE = 0.20
+TALENT_SLOT_RATE = 0.33
 
 def load_shop_items():
     with open("data/items.json", encoding="utf-8") as f:
@@ -30,16 +30,11 @@ def _owned_item_count(player, item_id):
 
 
 def _available_items(player, items):
-    return [
-        item for item in items
-        if item.get("repeatable_purchase", True) or _owned_item_count(player, item.get("id")) == 0
-    ]
+    return items
 
 
 def _can_buy_item(player, item):
-    if item.get("repeatable_purchase", True):
-        return True
-    return _owned_item_count(player, item.get("id")) == 0
+    return True
 
 
 def _owned_talent_ids(player):
