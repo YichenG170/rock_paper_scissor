@@ -56,8 +56,16 @@ def percent_text(rate):
     return f"{int((rate or 0) * 100)}%"
 
 
+def format_talents(talents):
+    if not talents:
+        return "无"
+    return " / ".join([t.get("name", "未知") for t in talents[:3]])
+
+
 def player_stat_lines(msg):
-    return [
+    my_talents = msg.get("your_talents", [])
+    opp_talents = msg.get("opponent_talents", [])
+    lines = [
         f"❤️ 血量: {msg.get('your_health', msg.get('health', 0))}",
         f"💰 金币: {msg.get('your_gold', msg.get('gold', 0))}",
         f"🎒 出拳总数: {msg.get('your_bag_size', msg.get('bag_size', 7))}",
@@ -66,6 +74,11 @@ def player_stat_lines(msg):
         f"🔥 连胜: {msg.get('your_win_streak', msg.get('win_streak', 0))}",
         f"🧊 连败: {msg.get('your_lose_streak', msg.get('lose_streak', 0))}",
     ]
+    if my_talents:
+        lines.append(f"✨ 你的天赋: {format_talents(my_talents)}")
+    if opp_talents:
+        lines.append(f"⚔️ 对手天赋: {format_talents(opp_talents)}")
+    return lines
 
 
 def rarity_tag(rarity):

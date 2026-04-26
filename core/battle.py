@@ -480,7 +480,7 @@ def run_match(p1, p2):
     log(f"\n=== {p1.name} VS {p2.name} 开始 ===", "cyan")
     _broadcast_to_observers(
         [p1.id, p2.id],
-        {"type": "match_start", "p1": p1.name, "p2": p2.name}
+        {"type": "match_start", "p1": p1.name, "p2": p2.name, "p1_talents": p1.talents, "p2_talents": p2.talents}
     )
 
     while score1 < 3 and score2 < 3 and rounds_played < max_rounds:
@@ -501,6 +501,8 @@ def run_match(p1, p2):
             "your_interest_rate": p1.interest_rate,
             "your_win_streak": p1.win_streak,
             "your_lose_streak": p1.lose_streak,
+            "your_talents": p1.talents,
+            "opponent_talents": p2.talents,
             "health_overview": health_overview
         })
         send_to_player(p2.id, {
@@ -518,6 +520,8 @@ def run_match(p1, p2):
             "your_interest_rate": p2.interest_rate,
             "your_win_streak": p2.win_streak,
             "your_lose_streak": p2.lose_streak,
+            "your_talents": p2.talents,
+            "opponent_talents": p1.talents,
             "health_overview": health_overview
         })
 
@@ -794,6 +798,14 @@ def run_match(p1, p2):
     
     elif score1 > score2:
         winner, loser = p1, p2
+        damage = winner.attack
+        if _has_talent_effect(winner, "double_damage_on_win"):
+            damage *= 2
+        damage += match_state["damage_bonus"].get(winner.id, 0)
+        if _has_talent_effect(winner, "scissors_count_damage_bonus"):
+            scissors_count = winner.rps_bag.get("scissors", 0)
+            damage += (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+        loser.health -= damage
         log(f"\n⏱️ 5回合结束，{winner.name} 以比分优势获胜！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         p1.gold += 5
@@ -806,6 +818,14 @@ def run_match(p1, p2):
     
     elif score2 > score1:
         winner, loser = p2, p1
+        damage = winner.attack
+        if _has_talent_effect(winner, "double_damage_on_win"):
+            damage *= 2
+        damage += match_state["damage_bonus"].get(winner.id, 0)
+        if _has_talent_effect(winner, "scissors_count_damage_bonus"):
+            scissors_count = winner.rps_bag.get("scissors", 0)
+            damage += (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+        loser.health -= damage
         log(f"\n⏱️ 5回合结束，{winner.name} 以比分优势获胜！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         p1.gold += 5
