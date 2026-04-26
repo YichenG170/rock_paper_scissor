@@ -8,8 +8,6 @@ from utils.logger import log
 import random
 import sys
 
-game_state = None
-
 
 def _build_health_overview(players):
     return [
@@ -56,26 +54,6 @@ def _has_talent_effect(player, effect_type):
             return True
     return False
 
-def start_server(host_name, max_players=4):
-    global game_state
-    game_state = GameState()
-    game_state.max_players = max_players
-
-    def on_player_join(player, conn):
-        log(f"✅ {player.name} 加入游戏 ({len(game_state.players)}/{game_state.max_players})", "green")
-        if len(game_state.players) == game_state.max_players:
-            log("🎉 所有玩家已就位，开始游戏！", "green")
-            threading.Thread(target=game_loop, daemon=False).start()   # ← 关键：改成 daemon=False
-
-    start_network_server("0.0.0.0", 5555, game_state, on_player_join)
-
-    # 保持主线程存活，防止提前退出
-    try:
-        while True:
-            time.sleep(0.5)   # 每0.5秒检查一次，响应 Ctrl+C
-    except KeyboardInterrupt:
-        log("\n🛑 服务器主动关闭...", "red")
-        sys.exit(0)
 
 def game_loop():
     global game_state
@@ -96,9 +74,39 @@ def game_loop():
         log(f"配对: {[(p1.name, p2.name) for p1, p2 in matches]}", "yellow")
 
         players_in_shop = []
+        match_threads = []
         
-        def run_match_thread(p1, p2):
+        def run_match_thread(p1_id, p2_id, p1_name, p2_name, result_list, all_players):
+            p1 = next(p for p in all_players if p.id == p1_id)
+            p2 = next(p for p in all_players if p.id == p2_id)
             p1_copy, p2_copy, is_draw = run_match(p1, p2)
+            result = {"p1_id": p1_id, "p2_id": p2_id, "p1_copy": p1_copy, "p2_copy": p2_copy, "is_draw": is_draw}
+            result_list.append(result)
+
+        match_results = []
+        all_players = list(game_state.players)
+        for p1, p2 in matches:
+            t = threading.Thread(target=run_match_thread, args=(p1.id, p2.id, p1.name, p2.name, match_results, all_players), daemon=True)
+            match_threads.append(t)
+            t.start()
+
+        for t in match_threads:
+            t.join()
+
+        log(f"DEBUG match_results: {match_results}", "yellow")
+
+        for result in match_results:
+            p1_id = result["p1_id"]
+            p2_id = result["p2_id"]
+            p1_copy = result["p1_copy"]
+            p2_copy = result["p2_copy"]
+            is_draw = result["is_draw"]
+            
+            p1 = next(p for p in game_state.players if p.id == p1_id)
+            p2 = next(p for p in game_state.players if p.id == p2_id)
+            
+            log(f"DEBUG 更新血量: {p1.name} {p1.health}->{p1_copy.health}, {p2.name} {p2.health}->{p2_copy.health}", "yellow")
+            
             if is_draw:
                 log(f"🤝 {p1.name} 与 {p2.name} 平局", "yellow")
                 p1.win_streak = 0
@@ -109,13 +117,10 @@ def game_loop():
                 p2.health = p2_copy.health
                 players_in_shop.extend([p1, p2])
             else:
-                for player in alive:
-                    if player.id == p1.id:
-                        p1.health = p1_copy.health
-                    if player.id == p2.id:
-                        p2.health = p2_copy.health
-                winner = p1 if p1_copy.health > p2_copy.health else p2
-                loser = p2 if p1_copy.health > p2_copy.health else p1
+                p1.health = p1_copy.health
+                p2.health = p2_copy.health
+                winner = p1 if p1.health > p2.health else p2
+                loser = p2 if p1.health > p2.health else p1
                 winner.win_streak += 1
                 loser.lose_streak += 1
                 if loser.health <= 0:
@@ -129,32 +134,31 @@ def game_loop():
             log(f"👋 {bye.name} 本轮轮空，直接进入商店", "yellow")
             players_in_shop.append(bye)
 
-        for p1, p2 in matches:
-            t = threading.Thread(target=run_match_thread, args=(p1, p2), daemon=True)
-            t.start()
-            t.join()
-
-        time.sleep(0.5)
+        log(f"DEBUG 进入商店的玩家: {[p.name for p in players_in_shop]}", "yellow")
 
         def health_fn():
             return [{"name": p.name, "health": p.health, "is_eliminated": p.is_eliminated} for p in alive]
 
+        log(f"DEBUG 所有存活玩家进入商店: {[p.name for p in alive if not p.is_eliminated]}", "yellow")
+        
         shop_threads = []
-        for p in players_in_shop:
+        for p in alive:
             if not p.is_eliminated:
-                def run_shop(p, health_fn):
-                    show_shop(p, health_fn())
-                t = threading.Thread(target=run_shop, args=(p, health_fn), daemon=True)
+                log(f"DEBUG 启动商店线程 for {p.name}", "yellow")
+                t = threading.Thread(target=show_shop, args=(p, health_fn()))
                 shop_threads.append(t)
                 t.start()
 
         for t in shop_threads:
             t.join()
 
-        for player in alive:
+        log(f"DEBUG 商店结束，玩家血量: {[(p.name, p.health) for p in game_state.players]}", "yellow")
+        
+        for player in game_state.players:
             if player.is_eliminated:
                 continue
             income = _round_income(player)
+            log(f"DEBUG 结算: {player.name} +{income['total']}金币 (基础{income['base']}+连胜{income['streak']}+利息{income['interest']})", "cyan")
             player.gold += income["total"]
             conn = clients.get(player.id)
             if conn:
@@ -168,9 +172,9 @@ def game_loop():
                     "your_attack": player.attack,
                     "your_interest_rate": player.interest_rate,
                     "your_win_streak": player.win_streak,
-"your_lose_streak": player.lose_streak,
+                    "your_lose_streak": player.lose_streak,
                     "income": income,
-                    "health_overview": [{"name": p.name, "health": p.health, "is_eliminated": p.is_eliminated} for p in alive]
+                    "health_overview": [{"name": p.name, "health": p.health, "is_eliminated": p.is_eliminated} for p in game_state.players]
                 })
 
         alive = [p for p in game_state.players if not p.is_eliminated]
@@ -182,3 +186,24 @@ def game_loop():
 
     time.sleep(3)
     sys.exit(0)
+
+
+def start_server(host_name, max_players=4):
+    global game_state
+    game_state = GameState()
+    game_state.max_players = max_players
+
+    def on_player_join(player, conn):
+        log(f"✅ {player.name} 加入游戏 ({len(game_state.players)}/{game_state.max_players})", "green")
+        if len(game_state.players) == game_state.max_players:
+            log("🎉 所有玩家已就位，开始游戏！", "green")
+            threading.Thread(target=game_loop, daemon=False).start()
+
+    start_network_server("0.0.0.0", 5555, game_state, on_player_join)
+
+    try:
+        while True:
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        log("\n🛑 服务器主动关闭...", "red")
+        sys.exit(0)

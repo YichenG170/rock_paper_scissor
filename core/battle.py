@@ -752,8 +752,18 @@ def run_match(p1, p2):
 
     if score1 >= 3:
         winner, loser = p1, p2
+        damage = winner.attack
+        if _has_talent_effect(winner, "double_damage_on_win"):
+            damage *= 2
+        damage += match_state["damage_bonus"].get(winner.id, 0)
+        if _has_talent_effect(winner, "scissors_count_damage_bonus"):
+            scissors_count = winner.rps_bag.get("scissors", 0)
+            damage += (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+        loser.health -= damage
         log(f"\n🎉 {winner.name} 赢得本场对战！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
+        p1.gold += 5
+        p2.gold += 5
         _send_match_result(winner, loser, score1, score2)
         _broadcast_to_observers(
             [p1.id, p2.id],
@@ -763,20 +773,31 @@ def run_match(p1, p2):
 
     elif score2 >= 3:
         winner, loser = p2, p1
+        damage = winner.attack
+        if _has_talent_effect(winner, "double_damage_on_win"):
+            damage *= 2
+        damage += match_state["damage_bonus"].get(winner.id, 0)
+        if _has_talent_effect(winner, "scissors_count_damage_bonus"):
+            scissors_count = winner.rps_bag.get("scissors", 0)
+            damage += (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+        loser.health -= damage
         log(f"\n🎉 {winner.name} 赢得本场对战！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
+        p1.gold += 5
+        p2.gold += 5
         _send_match_result(winner, loser, score1, score2)
         _broadcast_to_observers(
             [p1.id, p2.id],
             {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
         )
         return p1, p2, False
-
+    
     elif score1 > score2:
         winner, loser = p1, p2
         log(f"\n⏱️ 5回合结束，{winner.name} 以比分优势获胜！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
-        _send_match_result(winner, loser, score1, score2)
+        p1.gold += 5
+        p2.gold += 5
         _broadcast_to_observers(
             [p1.id, p2.id],
             {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
@@ -787,6 +808,8 @@ def run_match(p1, p2):
         winner, loser = p2, p1
         log(f"\n⏱️ 5回合结束，{winner.name} 以比分优势获胜！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
+        p1.gold += 5
+        p2.gold += 5
         _send_match_result(winner, loser, score1, score2)
         _broadcast_to_observers(
             [p1.id, p2.id],
@@ -848,6 +871,8 @@ def run_match(p1, p2):
                 log(f"{winner.name} [致命剪刀] 10%概率减少2血并使对手减1分!", "red")
 
     loser.health -= damage
+
+    log(f"DEBUG _handle_match_end: winner={winner.name} health={winner.health}, loser={loser.name} health={loser.health}, damage={damage}", "yellow")
 
     if _has_talent_effect(loser, "on_set_health_20_damage_double"):
         mult = match_state.get("damage_multiplier", {}).get(loser.id, 1)
