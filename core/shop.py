@@ -185,9 +185,10 @@ def show_shop(player, health_overview=None):
             "owned_talents": player.talents
         })
 
-        msg = get_message(player.id, timeout=30)
-        if not msg:
-            log(f"{player.name} 商店超时，自动退出", "yellow")
+        while True:
+            msg = get_message(player.id)
+            if not msg:
+                continue
             break
         choice = msg.get("choice")
 
