@@ -42,6 +42,18 @@ def receive_message(conn):
     return json.loads(recv_exact(conn, length).decode("utf-8"))
 
 
+def port_is_available(port):
+    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        probe.bind(("0.0.0.0", port))
+        return True
+    except OSError:
+        return False
+    finally:
+        probe.close()
+
+
 class WebSession:
     def __init__(self, name, host):
         self.id = uuid.uuid4().hex
@@ -92,6 +104,9 @@ class WebSession:
 def ensure_local_game_server(max_players):
     global game_server_started, game_server_error
     with game_server_lock:
+        if game_server_started and port_is_available(5555):
+            game_server_started = False
+            game_server_error = None
         if game_server_started:
             return
         from server.game_server import start_server

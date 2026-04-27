@@ -1,7 +1,7 @@
 import threading
 import time
 from core.game_state import GameState
-from server.network import start_network_server, send_message, clients, get_message
+from server.network import start_network_server, send_message, clients, player_queues, get_message
 from core.battle import run_match
 from core.shop import show_shop
 from utils.logger import log
@@ -190,6 +190,8 @@ def game_loop():
 
 def start_server(host_name, max_players=4):
     global game_state
+    clients.clear()
+    player_queues.clear()
     game_state = GameState()
     game_state.max_players = max_players
 
