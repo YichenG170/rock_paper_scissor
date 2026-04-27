@@ -236,6 +236,9 @@ async function poll() {
 el("connectForm").onsubmit = async (event) => {
   event.preventDefault();
   el("connectError").textContent = "";
+  const submitButton = event.currentTarget.querySelector("button[type='submit']");
+  if (submitButton.disabled) return;
+  submitButton.disabled = true;
   try {
     const data = await api("/api/connect", {
       name: el("nameInput").value,
@@ -250,5 +253,6 @@ el("connectForm").onsubmit = async (event) => {
     poll();
   } catch (err) {
     el("connectError").textContent = err.message;
+    submitButton.disabled = false;
   }
 };
