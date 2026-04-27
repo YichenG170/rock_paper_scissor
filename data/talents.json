@@ -31,9 +31,9 @@
     {
       "id": "berserker_oath",
       "name": "野蛮人",
-      "cost": 20,
+      "cost": 30,
       "effect": {"type": "double_damage_on_win", "value": 1},
-      "description": "战胜时 ➜ ⚔️ 翻倍；猜拳大师会接管你的第一轮出拳"
+      "description": "战胜时 ➜ ⚔️ 翻倍；一个孔武有力的野蛮人会接管你的第一轮出拳"
     },
     {
       "id": "rock_corrupt",
@@ -60,7 +60,7 @@
     {
       "id": "golden_compound",
       "name": "经济学家",
-      "cost": 30,
+      "cost": 20,
       "effect": {"type": "interest_rate_plus", "value": 0.05},
       "description": "🏦 +10%"
     },
@@ -69,7 +69,7 @@
       "name": "第二柜台",
       "cost": 20,
       "effect": {"type": "shop_slots_plus", "value": 1},
-      "description": "🛒 槽位 +2"
+      "description": "🛒 槽位 +1"
     },
     {
       "id": "stone_bootcamp",
@@ -146,7 +146,7 @@
       "id": "scissors_gold_steal",
       "name": "剪！破！钱！袋！",
       "cost": 30,
-      "effect": {"type": "scissors_win_drain_gold", "value": 8},
+      "effect": {"type": "scissors_win_drain_gold", "value": 4},
       "description": " ✂️ 获胜时 ➜ 偷取8 💰 "
     },
     {
@@ -166,7 +166,7 @@
     {
       "id": "scissors_quantity_damage",
       "name": "物尽其用",
-      "cost": 10,
+      "cost": 30,
       "effect": {"type": "scissors_count_damage_bonus", "value": 1},
       "description": "获胜时，每拥有2个 ✂️ ➜ ⚔️ +1"
     },
@@ -183,7 +183,7 @@
       "name": "连招大师",
       "cost": 10,
       "effect": {"type": "consecutive_same_choice_gold", "value": 2},
-      "description": "连续相同出拳时 ➜ 获得 2 💰 "
+      "description": "连续相同出拳时 ➜ 获得 1 💰 "
     },
     {
       "id": "all_rock_transmute",
@@ -209,7 +209,7 @@
     {
       "id": "rock_streak_bonus",
       "name": "一根筋",
-      "cost": 10,
+      "cost": 20,
       "effect": {"type": "rock_streak_bonus", "value": 1},
       "description": "连续打出5次 🗻 ➜ 获得3 🏆 +30 💰 "
     },
@@ -272,7 +272,7 @@
     {
       "id": "on_first_scissors_win_swap_health_by_gold",
       "name": "偷！天！换！日！",
-      "cost": 30,
+      "cost": 20,
       "effect": {"type": "on_first_scissors_win_swap_health_by_gold", "value": 1},
       "description": "首次 ✂️ 获胜时若有≥50 💰 ➜ 消耗50 💰 与对手互换 ❤️"
     },

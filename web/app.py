@@ -18,6 +18,7 @@ if str(ROOT) not in sys.path:
 
 sessions = {}
 game_server_started = False
+game_server_error = None
 game_server_lock = threading.Lock()
 
 
@@ -89,18 +90,27 @@ class WebSession:
 
 
 def ensure_local_game_server(max_players):
-    global game_server_started
+    global game_server_started, game_server_error
     with game_server_lock:
         if game_server_started:
             return
         from server.game_server import start_server
 
         def run():
-            start_server("Web Host", max_players)
+            global game_server_error
+            try:
+                start_server("Web Host", max_players)
+            except Exception as exc:
+                game_server_error = str(exc)
 
         threading.Thread(target=run, daemon=True).start()
         game_server_started = True
-    time.sleep(0.4)
+        game_server_error = None
+
+    time.sleep(1.0)
+    if game_server_error:
+        game_server_started = False
+        raise RuntimeError(f"game server failed to start: {game_server_error}")
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -145,6 +155,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def handle_connect(self):
+        global game_server_started
         data = self.read_json()
         name = (data.get("name") or "玩家").strip()[:24]
         host = (data.get("host") or "127.0.0.1").strip()
@@ -157,6 +168,8 @@ class Handler(SimpleHTTPRequestHandler):
             sessions[session.id] = session
             self.send_json({"ok": True, "sessionId": session.id})
         except Exception as exc:
+            if data.get("createServer"):
+                game_server_started = False
             self.send_json({"ok": False, "error": str(exc)}, 500)
 
     def handle_messages(self, parsed):
@@ -195,7 +208,7 @@ def main():
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     os.chdir(ROOT)
     port = int(os.environ.get("WEB_PORT", "8001"))
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     print(f"Web interface: http://127.0.0.1:{port}")
     server.serve_forever()
 
