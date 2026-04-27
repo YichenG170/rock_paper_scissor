@@ -22,6 +22,15 @@ game_server_error = None
 game_server_lock = threading.Lock()
 
 
+class SingleInstanceHTTPServer(ThreadingHTTPServer):
+    allow_reuse_address = False
+
+    def server_bind(self):
+        if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 def send_message(conn, data):
     message = json.dumps(data).encode("utf-8")
     conn.sendall(len(message).to_bytes(4, "big") + message)
@@ -223,7 +232,7 @@ def main():
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     os.chdir(ROOT)
     port = int(os.environ.get("WEB_PORT", "8001"))
-    server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
+    server = SingleInstanceHTTPServer(("0.0.0.0", port), Handler)
     print(f"Web interface: http://127.0.0.1:{port}")
     server.serve_forever()
 
