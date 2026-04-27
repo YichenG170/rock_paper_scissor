@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RPS Battlegrounds Web</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="shell">
+    <section id="connectView" class="connect">
+      <div class="brand">
+        <div class="mark">
+          <span>石</span><span>剪</span><span>布</span>
+        </div>
+        <h1>RPS Battlegrounds</h1>
+        <p>Web Interface</p>
+      </div>
+      <form id="connectForm" class="connectForm">
+        <label>玩家名<input id="nameInput" maxlength="24" value="玩家"></label>
+        <label>服务器 IP<input id="hostInput" value="127.0.0.1"></label>
+        <label>玩家数<input id="maxPlayersInput" type="number" min="2" max="8" value="2"></label>
+        <label class="check"><input id="createServerInput" type="checkbox" checked> 创建本机服务器</label>
+        <button type="submit">进入游戏</button>
+        <p id="connectError" class="error"></p>
+      </form>
+    </section>
+
+    <section id="gameView" class="game hidden">
+      <aside class="side">
+        <div class="panel">
+          <h2>状态</h2>
+          <div id="stats" class="stats"></div>
+        </div>
+        <div class="panel">
+          <h2>全局血量</h2>
+          <div id="healthBoard" class="healthBoard"></div>
+        </div>
+        <div class="panel">
+          <h2>出拳包</h2>
+          <div id="bag" class="bag"></div>
+        </div>
+        <div class="panel">
+          <h2>我的详情</h2>
+          <div id="selfDetail" class="detailList"></div>
+        </div>
+        <div class="panel">
+          <h2>对手天赋</h2>
+          <div id="opponentDetail" class="detailList"></div>
+        </div>
+      </aside>
+
+      <section class="stage">
+        <div id="phase" class="phase">等待游戏开始</div>
+        <div id="actionArea" class="actionArea"></div>
+        <div class="panel logPanel">
+          <h2>战况</h2>
+          <div id="log" class="log"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

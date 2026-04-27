@@ -46,6 +46,22 @@ def _has_talent_id(player, talent_id):
     return any(t.get("id") == talent_id for t in player.talents)
 
 
+def _talent_name(player, effect_type=None, talent_id=None):
+    for talent in player.talents:
+        effect = talent.get("effect", {})
+        if talent_id and talent.get("id") == talent_id:
+            return talent.get("name", talent_id)
+        if effect_type and effect.get("type") == effect_type:
+            return talent.get("name", effect_type)
+    return talent_id or effect_type or "unknown"
+
+
+def _add_talent_summary(match_state, player, effect_type=None, detail="", talent_id=None):
+    name = _talent_name(player, effect_type=effect_type, talent_id=talent_id)
+    suffix = f": {detail}" if detail else ""
+    _add_summary(match_state, f"{player.name} triggered talent [{name}]{suffix}")
+
+
 def _random_valid_choice(player):
     options = [k for k in ("rock", "scissors", "paper") if player.rps_bag.get(k, 0) > 0]
     if not options:
@@ -76,11 +92,14 @@ def _convert_random_to_type(player, target_type, match_state=None):
         if _has_talent_effect(player, "on_change_rps_gain_gold_by_paper"):
             gold = player.rps_bag.get("paper", 0)
             player.gold += gold / 2
+            _add_talent_summary(match_state, player, "on_change_rps_gain_gold_by_paper", f"gold +{gold / 2:g}")
             log(f"{player.name} [印钞机] 根据布数量获得 {gold} 金币", "cyan")
     
     if target_type == "paper" and _has_talent_effect(player, "paper_transform_bonus"):
         bonus = _talent_total(player, "paper_transform_bonus")
         player.rps_bag["paper"] += bonus
+        if match_state is not None:
+            _add_talent_summary(match_state, player, "paper_transform_bonus", f"paper +{bonus}")
         log(f"[一生二] 额外获得 {bonus} 个布", "cyan")
     return True
 
@@ -133,18 +152,21 @@ def _handle_paper_win_effects(winner, loser, match_state):
     if _has_talent_effect(winner, "paper_win_heal"):
         heal = _talent_total(winner, "paper_win_heal")
         winner.health += heal
+        _add_talent_summary(match_state, winner, "paper_win_heal", f"heal +{heal}")
         log(f"{winner.name} [纸上春风] 回复 {heal} 血量", "green")
 
     if _has_talent_effect(winner, "paper_over_5_win_bonus"):
         if winner.rps_bag.get("paper", 0) > 5:
             bonus = _talent_total(winner, "paper_over_5_win_bonus")
             match_state["round_bonus"][winner.id] += bonus
+            _add_talent_summary(match_state, winner, "paper_over_5_win_bonus", f"score bonus +{bonus}")
             log(f"{winner.name} [纸海狂潮] 额外 +{bonus} 分", "green")
 
     if _has_talent_effect(winner, "on_paper_win_random_rock_scissors"):
         import random
         choice = random.choice(["rock", "scissors"])
         winner.rps_bag[choice] = winner.rps_bag.get(choice, 0) + 1
+        _add_talent_summary(match_state, winner, "on_paper_win_random_rock_scissors", f"gain 1 {choice}")
         log(f"{winner.name} [偷天换日] 获得随机 {choice}", "cyan")
 
 
@@ -155,30 +177,36 @@ def _handle_scissors_win_effects(winner, loser, match_state):
         stolen = min(steal, max(0, loser.gold))
         loser.gold -= stolen
         _gain_gold_in_battle(winner, stolen)
+        _add_talent_summary(match_state, winner, "scissors_win_drain_gold", f"steal {stolen} gold")
         log(f"{winner.name} [剪财夺金] 偷取 {stolen} 金币", "yellow")
 
     # 伤害加成（本场持续）
     if _has_talent_effect(winner, "scissors_win_damage_plus"):
         match_state.setdefault("damage_bonus", {}).setdefault(winner.id, 0)
         match_state["damage_bonus"][winner.id] += _talent_total(winner, "scissors_win_damage_plus")
+        _add_talent_summary(match_state, winner, "scissors_win_damage_plus", f"match damage +{match_state['damage_bonus'][winner.id]}")
         log(f"{winner.name} [剪刀手] 本场伤害 +{match_state['damage_bonus'][winner.id]}", "green")
 
     # 输掉布的人触发：第一次使用布失败回血
     if _has_talent_effect(loser, "on_first_paper_lose_heal") and not match_state.get("first_paper_lose_used", {}).get(loser.id, False):
         match_state["first_paper_lose_used"][loser.id] = True
         loser.health += 1
+        _add_talent_summary(match_state, loser, "on_first_paper_lose_heal", "heal +1")
         log(f"{loser.name} [垂死挣扎] 第一次布失败回复1点血量", "green")
 
     # 剪刀失败时：七伤拳自己扣血
     if _has_talent_effect(loser, "on_scissors_win_drain_health_same"):
         loser.health -= 1
+        _add_talent_summary(match_state, loser, "on_scissors_win_drain_health_same", "self health -1")
         log(f"{loser.name} [七伤拳] 剪刀失败自己减少1血量", "red")
 
 
-def _handle_consecutive_choice(player, last_choice, current_choice):
+def _handle_consecutive_choice(player, last_choice, current_choice, match_state=None):
     if last_choice == current_choice and last_choice is not None:
         if _has_talent_effect(player, "consecutive_same_choice_gold"):
             _gain_gold_in_battle(player, 1)
+            if match_state is not None:
+                _add_talent_summary(match_state, player, "consecutive_same_choice_gold", "gain 1 gold")
             log(f"{player.name} [连招赏金] 连续相同出拳 +1 金币", "cyan")
 
 
@@ -258,6 +286,7 @@ def _apply_battle_item(player, opponent, item_id, match_state):
     if _has_talent_effect(player, "on_use_item_lose_gold"):
         lose = _talent_total(player, "on_use_item_lose_gold")
         player.gold = max(0, player.gold - lose)
+        _add_talent_summary(match_state, player, "on_use_item_lose_gold", f"lose {lose} gold")
         log(f"{player.name} [采购回扣] 使用道具失去{lose}金币", "red")
 
     return f"{item.get('name', '未知')}[{_rarity_cn(item.get('rarity'))}]"
@@ -353,8 +382,9 @@ def _handle_match_end(winner, loser, score1, score2, match_state):
         log(f"{winner.name} [乘人之危] 对手0分失败，夺取15金币", "yellow")
 
 
-def _send_match_result(winner, loser, score1, score2, is_draw=False):
+def _send_match_result(winner, loser, score1, score2, is_draw=False, match_state=None):
     health_overview = _build_health_overview(winner, loser)
+    round_summary = (match_state or {}).get("round_summary", [])
     if is_draw:
         send_to_player(winner.id, {
             "type": "match_result",
@@ -371,7 +401,8 @@ def _send_match_result(winner, loser, score1, score2, is_draw=False):
             "your_interest_rate": winner.interest_rate,
             "your_win_streak": winner.win_streak,
             "your_lose_streak": winner.lose_streak,
-            "health_overview": health_overview
+            "health_overview": health_overview,
+            "round_summary": round_summary
         })
         send_to_player(loser.id, {
             "type": "match_result",
@@ -388,7 +419,8 @@ def _send_match_result(winner, loser, score1, score2, is_draw=False):
             "your_interest_rate": loser.interest_rate,
             "your_win_streak": loser.win_streak,
             "your_lose_streak": loser.lose_streak,
-            "health_overview": health_overview
+            "health_overview": health_overview,
+            "round_summary": round_summary
         })
         return
 
@@ -407,7 +439,8 @@ def _send_match_result(winner, loser, score1, score2, is_draw=False):
         "your_interest_rate": winner.interest_rate,
         "your_win_streak": winner.win_streak,
         "your_lose_streak": winner.lose_streak,
-        "health_overview": health_overview
+        "health_overview": health_overview,
+        "round_summary": round_summary
     })
     send_to_player(loser.id, {
         "type": "match_result",
@@ -424,7 +457,8 @@ def _send_match_result(winner, loser, score1, score2, is_draw=False):
         "your_interest_rate": loser.interest_rate,
         "your_win_streak": loser.win_streak,
         "your_lose_streak": loser.lose_streak,
-        "health_overview": health_overview
+        "health_overview": health_overview,
+        "round_summary": round_summary
     })
 
 
@@ -535,16 +569,18 @@ def run_match(p1, p2):
         item_used_1 = _apply_battle_item(p1, p2, msg1.get("use_item"), match_state)
         item_used_2 = _apply_battle_item(p2, p1, msg2.get("use_item"), match_state)
         if item_used_1:
-            _add_summary(match_state, f"【{p1.name}】使用道具 {item_used_1}")
+            _add_summary(match_state, f"{p1.name} used item {item_used_1}")
         if item_used_2:
-            _add_summary(match_state, f"【{p2.name}】使用道具 {item_used_2}")
+            _add_summary(match_state, f"{p2.name} used item {item_used_2}")
         choice1 = msg1.get("choice")
         choice2 = msg2.get("choice")
 
         if rounds_played == 0 and _has_talent_id(p1, "berserker_oath"):
             choice1 = _random_valid_choice(p1)
+            _add_talent_summary(match_state, p1, talent_id="berserker_oath", detail=f"auto picked {choice1}")
         if rounds_played == 0 and _has_talent_id(p2, "berserker_oath"):
             choice2 = _random_valid_choice(p2)
+            _add_talent_summary(match_state, p2, talent_id="berserker_oath", detail=f"auto picked {choice2}")
 
         if not p1.use_rps(choice1):
             log(f"{p1.name} 出拳无效！", "red")
@@ -559,6 +595,7 @@ def run_match(p1, p2):
                 score1 += 3
                 p1.gold += 30
                 p1.rock_streak_cnt = 0
+                _add_talent_summary(match_state, p1, "rock_streak_bonus", "score +3, gold +30")
                 log(f"{p1.name} [一根筋] 连续5次石头，获得3分与30金币！({score1}:{score2})", "cyan")
         if choice1 is not None and choice1 != "rock" and _has_talent_effect(p1, "rock_streak_bonus"):
             p1.rock_streak_cnt = 0
@@ -568,44 +605,53 @@ def run_match(p1, p2):
                 score2 += 3
                 p2.gold += 30
                 p2.rock_streak_cnt = 0
+                _add_talent_summary(match_state, p2, "rock_streak_bonus", "score +3, gold +30")
                 log(f"{p2.name} [一根筋] 连续5次石头，获得3分与30金币！({score1}:{score2})", "cyan")
         if choice2 is not None and choice2 != "rock" and _has_talent_effect(p2, "rock_streak_bonus"):
             p2.rock_streak_cnt = 0
 
         if choice1 == "rock" and _has_talent_effect(p1, "on_play_rock_convert_opponent_to_rock"):
             _convert_random_non_rock_to_rock(p2)
+            _add_talent_summary(match_state, p1, "on_play_rock_convert_opponent_to_rock", "converted opponent hand to rock")
         if choice2 == "rock" and _has_talent_effect(p2, "on_play_rock_convert_opponent_to_rock"):
             _convert_random_non_rock_to_rock(p1)
+            _add_talent_summary(match_state, p2, "on_play_rock_convert_opponent_to_rock", "converted opponent hand to rock")
 
         if choice1 == "rock" and p1.rps_bag.get("rock", 0) == 0 and _has_talent_effect(p1, "on_last_rock_convert_to_rock"):
             match_state["last_rock_trigger"][p1.id] = True
+            _add_talent_summary(match_state, p1, "on_last_rock_convert_to_rock", "last rock marker armed")
         if choice2 == "rock" and p2.rps_bag.get("rock", 0) == 0 and _has_talent_effect(p2, "on_last_rock_convert_to_rock"):
             match_state["last_rock_trigger"][p2.id] = True
+            _add_talent_summary(match_state, p2, "on_last_rock_convert_to_rock", "last rock marker armed")
 
         if choice1 == "scissors" and _has_talent_effect(p1, "on_play_scissors_convert_opp_to_paper"):
             _convert_random_to_type(p2, "paper", match_state)
+            _add_talent_summary(match_state, p1, "on_play_scissors_convert_opp_to_paper", "converted opponent hand to paper")
         if choice2 == "scissors" and _has_talent_effect(p2, "on_play_scissors_convert_opp_to_paper"):
             _convert_random_to_type(p1, "paper", match_state)
+            _add_talent_summary(match_state, p2, "on_play_scissors_convert_opp_to_paper", "converted opponent hand to paper")
 
         if choice1 == "scissors" and _has_talent_effect(p1, "on_scissors_opp_bag_greater_than_rounds"):
             opp_rps_total = sum(p2.rps_bag.values())
             remaining_rounds = max_rounds - rounds_played
             if opp_rps_total > remaining_rounds:
                 _remove_random_rps(p2)
+                _add_talent_summary(match_state, p1, "on_scissors_opp_bag_greater_than_rounds", "removed 1 opponent hand")
                 log(f"{p1.name} [趁人之危] 对手出拳多于剩余轮数，随机失去一个出拳", "cyan")
         if choice2 == "scissors" and _has_talent_effect(p2, "on_scissors_opp_bag_greater_than_rounds"):
             opp_rps_total = sum(p1.rps_bag.values())
             remaining_rounds = max_rounds - rounds_played
             if opp_rps_total > remaining_rounds:
                 _remove_random_rps(p1)
+                _add_talent_summary(match_state, p2, "on_scissors_opp_bag_greater_than_rounds", "removed 1 opponent hand")
                 log(f"{p2.name} [趁人之危] 对手出拳多于剩余轮数，随机失去一个出拳", "cyan")
 
         if choice1 == "paper" and _has_talent_effect(p1, "on_play_paper_reroll_all"):
             p1.rps_bag = generate_initial_bag(p1.bag_size)
-            _add_summary(match_state, f"【{p1.name}】全部出拳随机重置")
+            _add_talent_summary(match_state, p1, "on_play_paper_reroll_all", "rerolled all hands")
         if choice2 == "paper" and _has_talent_effect(p2, "on_play_paper_reroll_all"):
             p2.rps_bag = generate_initial_bag(p2.bag_size)
-            _add_summary(match_state, f"【{p2.name}】全部出拳随机重置")
+            _add_talent_summary(match_state, p2, "on_play_paper_reroll_all", "rerolled all hands")
 
         if _has_talent_effect(p1, "on_change_rps_health_bonus_malus"):
             last_c1 = match_state["last_choice"].get(p1.id)
@@ -613,20 +659,20 @@ def run_match(p1, p2):
             if choice1 != last_c1 and choice1 is not None and change_bonus_used < 2:
                 p1.health += 1
                 match_state.setdefault("change_bonus_used", {})[p1.id] = change_bonus_used + 1
-                _add_summary(match_state, f"【{p1.name}】变换出拳+1血({change_bonus_used + 1}/2)")
+                _add_talent_summary(match_state, p1, "on_change_rps_health_bonus_malus", f"health +1 ({change_bonus_used + 1}/2)")
             elif choice1 == last_c1 and choice1 is not None:
                 p1.health -= 2
-                _add_summary(match_state, f"【{p1.name}】相同出拳-2血")
+                _add_talent_summary(match_state, p1, "on_change_rps_health_bonus_malus", "health -2")
         if _has_talent_effect(p2, "on_change_rps_health_bonus_malus"):
             last_c2 = match_state["last_choice"].get(p2.id)
             change_bonus_used = match_state.get("change_bonus_used", {}).get(p2.id, 0)
             if choice2 != last_c2 and choice2 is not None and change_bonus_used < 2:
                 p2.health += 1
                 match_state.setdefault("change_bonus_used", {})[p2.id] = change_bonus_used + 1
-                _add_summary(match_state, f"【{p2.name}】变换出拳+1血({change_bonus_used + 1}/2)")
+                _add_talent_summary(match_state, p2, "on_change_rps_health_bonus_malus", f"health +1 ({change_bonus_used + 1}/2)")
             elif choice2 == last_c2 and choice2 is not None:
                 p2.health -= 2
-                _add_summary(match_state, f"【{p2.name}】相同出拳-2血")
+                _add_talent_summary(match_state, p2, "on_change_rps_health_bonus_malus", "health -2")
 
         rounds_played += 1
 
@@ -653,8 +699,8 @@ def run_match(p1, p2):
                     rounds_played += 1
                     continue
             
-            _handle_consecutive_choice(p1, match_state["last_choice"][p1.id], choice1)
-            _handle_consecutive_choice(p2, match_state["last_choice"][p2.id], choice2)
+            _handle_consecutive_choice(p1, match_state["last_choice"][p1.id], choice1, match_state)
+            _handle_consecutive_choice(p2, match_state["last_choice"][p2.id], choice2, match_state)
             match_state["last_choice"][p1.id] = choice1
             match_state["last_choice"][p2.id] = choice2
             
@@ -673,13 +719,16 @@ def run_match(p1, p2):
 
         win_map = {("rock", "scissors"): True, ("scissors", "paper"): True, ("paper", "rock"): True}
         if choice1 and choice2 and (choice1, choice2) in win_map:
-            _handle_consecutive_choice(p1, match_state["last_choice"][p1.id], choice1)
+            _handle_consecutive_choice(p1, match_state["last_choice"][p1.id], choice1, match_state)
             match_state["last_choice"][p1.id] = choice1
             match_state["last_choice"][p2.id] = choice2
 
             gain = 1 + match_state["round_bonus"][p1.id]
             if choice1 == "rock":
-                gain += _talent_total(p1, "rock_win_score_bonus")
+                rock_bonus = _talent_total(p1, "rock_win_score_bonus")
+                gain += rock_bonus
+                if rock_bonus:
+                    _add_talent_summary(match_state, p1, "rock_win_score_bonus", f"score +{rock_bonus}")
             if match_state["score_swing"][p1.id] > 0:
                 gain += match_state["score_swing"][p1.id]
             score1 += gain
@@ -690,7 +739,7 @@ def run_match(p1, p2):
                     new_type = random.choice(["rock", "scissors", "paper"])
                     total = sum(p1.rps_bag.values())
                     p1.rps_bag = {new_type: total, "rock": 0, "scissors": 0, "paper": 0}
-                    _add_summary(match_state, f"【{p1.name}】首个达到2分，所有出拳变成{new_type}")
+                    _add_talent_summary(match_state, p1, "on_first_score_convert_all_same", f"all hands became {new_type}")
             if choice1 == "paper":
                 _handle_paper_win_effects(p1, p2, match_state)
             if choice1 == "scissors":
@@ -707,13 +756,16 @@ def run_match(p1, p2):
                 rounds_played, max_rounds, item_used_1, item_used_2, match_state
             )
         elif choice1 and choice2:
-            _handle_consecutive_choice(p2, match_state["last_choice"][p2.id], choice2)
+            _handle_consecutive_choice(p2, match_state["last_choice"][p2.id], choice2, match_state)
             match_state["last_choice"][p1.id] = choice1
             match_state["last_choice"][p2.id] = choice2
 
             gain = 1 + match_state["round_bonus"][p2.id]
             if choice2 == "rock":
-                gain += _talent_total(p2, "rock_win_score_bonus")
+                rock_bonus = _talent_total(p2, "rock_win_score_bonus")
+                gain += rock_bonus
+                if rock_bonus:
+                    _add_talent_summary(match_state, p2, "rock_win_score_bonus", f"score +{rock_bonus}")
             if match_state["score_swing"][p2.id] > 0:
                 gain += match_state["score_swing"][p2.id]
             score2 += gain
@@ -724,7 +776,7 @@ def run_match(p1, p2):
                     new_type = random.choice(["rock", "scissors", "paper"])
                     total = sum(p2.rps_bag.values())
                     p2.rps_bag = {new_type: total, "rock": 0, "scissors": 0, "paper": 0}
-                    _add_summary(match_state, f"【{p2.name}】首个达到2分，所有出拳变成{new_type}")
+                    _add_talent_summary(match_state, p2, "on_first_score_convert_all_same", f"all hands became {new_type}")
             if choice2 == "paper":
                 _handle_paper_win_effects(p2, p1, match_state)
             if choice2 == "scissors":
@@ -757,9 +809,11 @@ def run_match(p1, p2):
         if choice1 and choice2 and (choice1, choice2) not in win_map and choice1 != choice2:
             if _has_talent_effect(p1, "on_lose_if_has_paper_gain") and p1.rps_bag.get("paper", 0) > 0:
                 p1.add_to_bag("paper", 1)
+                _add_talent_summary(match_state, p1, "on_lose_if_has_paper_gain", "gain 1 paper")
                 log(f"{p1.name} 【再来一次】获得 1 个布", "cyan")
             if _has_talent_effect(p2, "on_lose_if_has_paper_gain") and p2.rps_bag.get("paper", 0) > 0:
                 p2.add_to_bag("paper", 1)
+                _add_talent_summary(match_state, p2, "on_lose_if_has_paper_gain", "gain 1 paper")
                 log(f"{p2.name} 【再来一次】获得 1 个布", "cyan")
 
     if score1 >= 3:
@@ -767,16 +821,20 @@ def run_match(p1, p2):
         damage = winner.attack
         if _has_talent_effect(winner, "double_damage_on_win"):
             damage *= 2
+            _add_talent_summary(match_state, winner, "double_damage_on_win", "damage doubled")
         damage += match_state["damage_bonus"].get(winner.id, 0)
         if _has_talent_effect(winner, "scissors_count_damage_bonus"):
             scissors_count = winner.rps_bag.get("scissors", 0)
-            damage += (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+            extra = (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+            damage += extra
+            if extra:
+                _add_talent_summary(match_state, winner, "scissors_count_damage_bonus", f"damage +{extra}")
         loser.health -= damage
         log(f"\n🎉 {winner.name} 赢得本场对战！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         p1.gold += 5
         p2.gold += 5
-        _send_match_result(winner, loser, score1, score2)
+        _send_match_result(winner, loser, score1, score2, match_state=match_state)
         _broadcast_to_observers(
             [p1.id, p2.id],
             {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
@@ -788,16 +846,20 @@ def run_match(p1, p2):
         damage = winner.attack
         if _has_talent_effect(winner, "double_damage_on_win"):
             damage *= 2
+            _add_talent_summary(match_state, winner, "double_damage_on_win", "damage doubled")
         damage += match_state["damage_bonus"].get(winner.id, 0)
         if _has_talent_effect(winner, "scissors_count_damage_bonus"):
             scissors_count = winner.rps_bag.get("scissors", 0)
-            damage += (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+            extra = (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+            damage += extra
+            if extra:
+                _add_talent_summary(match_state, winner, "scissors_count_damage_bonus", f"damage +{extra}")
         loser.health -= damage
         log(f"\n🎉 {winner.name} 赢得本场对战！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         p1.gold += 5
         p2.gold += 5
-        _send_match_result(winner, loser, score1, score2)
+        _send_match_result(winner, loser, score1, score2, match_state=match_state)
         _broadcast_to_observers(
             [p1.id, p2.id],
             {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
@@ -809,15 +871,20 @@ def run_match(p1, p2):
         damage = winner.attack
         if _has_talent_effect(winner, "double_damage_on_win"):
             damage *= 2
+            _add_talent_summary(match_state, winner, "double_damage_on_win", "damage doubled")
         damage += match_state["damage_bonus"].get(winner.id, 0)
         if _has_talent_effect(winner, "scissors_count_damage_bonus"):
             scissors_count = winner.rps_bag.get("scissors", 0)
-            damage += (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+            extra = (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+            damage += extra
+            if extra:
+                _add_talent_summary(match_state, winner, "scissors_count_damage_bonus", f"damage +{extra}")
         loser.health -= damage
         log(f"\n⏱️ 5回合结束，{winner.name} 以比分优势获胜！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         p1.gold += 5
         p2.gold += 5
+        _send_match_result(winner, loser, score1, score2, match_state=match_state)
         _broadcast_to_observers(
             [p1.id, p2.id],
             {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
@@ -829,16 +896,20 @@ def run_match(p1, p2):
         damage = winner.attack
         if _has_talent_effect(winner, "double_damage_on_win"):
             damage *= 2
+            _add_talent_summary(match_state, winner, "double_damage_on_win", "damage doubled")
         damage += match_state["damage_bonus"].get(winner.id, 0)
         if _has_talent_effect(winner, "scissors_count_damage_bonus"):
             scissors_count = winner.rps_bag.get("scissors", 0)
-            damage += (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+            extra = (scissors_count // 2) * _talent_total(winner, "scissors_count_damage_bonus")
+            damage += extra
+            if extra:
+                _add_talent_summary(match_state, winner, "scissors_count_damage_bonus", f"damage +{extra}")
         loser.health -= damage
         log(f"\n⏱️ 5回合结束，{winner.name} 以比分优势获胜！", "green")
         _handle_match_end(winner, loser, score1, score2, match_state)
         p1.gold += 5
         p2.gold += 5
-        _send_match_result(winner, loser, score1, score2)
+        _send_match_result(winner, loser, score1, score2, match_state=match_state)
         _broadcast_to_observers(
             [p1.id, p2.id],
             {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": winner.name, "score": f"{score1}:{score2}"}
@@ -849,7 +920,7 @@ def run_match(p1, p2):
         log("\n⏱️ 5回合结束，双方平局，本场不掉血", "yellow")
         _handle_match_end(p1, p1, score1, score2, match_state)
         _handle_match_end(p2, p2, score2, score1, match_state)
-        _send_match_result(p1, p2, score1, score2, is_draw=True)
+        _send_match_result(p1, p2, score1, score2, is_draw=True, match_state=match_state)
         _broadcast_to_observers(
             [p1.id, p2.id],
             {"type": "match_end", "p1": p1.name, "p2": p2.name, "winner": "平局", "score": f"{score1}:{score2}"}
